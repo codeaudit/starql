@@ -126,5 +126,57 @@ public class QlSelectStatement implements QueryStatement{
 		return EqualsBuilder.reflectionEquals(this, obj);
 	}
 	
-	
+	public static class Builder {
+		private List<QlField> fields;
+		private String table;
+		private QlBooleanConstraintNode constraints;
+		private QlSortClause sortConstraint;
+		private String queryString;
+		private QlPageConstraints pageConstraints;
+		public List<QlField> getFields() {
+			return fields;
+		}
+		public Builder setFields(List<QlField> fields) {
+			this.fields = fields;
+			return this;
+		}
+		public String getCollection() {
+			return table;
+		}
+		public Builder setCollection(String collection) {
+			this.table = collection;
+			return this;
+		}
+		public QlBooleanConstraintNode getConstraints() {
+			return constraints;
+		}
+		public Builder setConstraints(QlBooleanConstraintNode constraints) {
+			this.constraints = constraints;
+			return this;
+		}
+		public QlSortClause getSortConstraint() {
+			return sortConstraint;
+		}
+		public Builder setSortConstraint(QlSortClause sortConstraint) {
+			this.sortConstraint = sortConstraint;
+			return this;
+		}
+		public String getQueryString() {
+			return queryString;
+		}
+		public Builder setQueryString(String queryString) {
+			this.queryString = queryString;
+			return this;
+		}
+		public QlPageConstraints getPageConstraints() {
+			return pageConstraints;
+		}
+		public Builder setPageConstraints(QlPageConstraints pageConstraints) {
+			this.pageConstraints = pageConstraints;
+			return this;
+		}
+		public QlSelectStatement build() {
+			return new QlSelectStatement(fields, table, constraints, sortConstraint, pageConstraints);
+		}
+	}
 }

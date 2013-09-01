@@ -55,4 +55,26 @@ public class QlPageConstraints {
 	public boolean equals(Object obj) {
 		return EqualsBuilder.reflectionEquals(this, obj);
 	}
+	
+	public static class Builder {
+		private int limit = -1;
+		private int offset = -1;
+		public int getLimit() {
+			return limit;
+		}
+		public Builder setLimit(int limit) {
+			this.limit = limit;
+			return this;
+		}
+		public int getOffset() {
+			return offset;
+		}
+		public Builder setOffset(int offset) {
+			this.offset = offset;
+			return this;
+		}
+		public QlPageConstraints build() {
+			return new QlPageConstraints(limit, offset);
+		}
+	}
 }

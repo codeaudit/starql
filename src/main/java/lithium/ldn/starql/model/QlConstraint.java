@@ -14,8 +14,12 @@
 
 package lithium.ldn.starql.model;
 
+import java.util.List;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.google.common.collect.Lists;
 
 /**
  * Defines a search constraint by requiring a field to related to a value in a 
@@ -76,5 +80,65 @@ public final class QlConstraint implements QlBooleanConstraintNode {
 	@Override
 	public boolean equals(Object obj) {
 		return EqualsBuilder.reflectionEquals(this, obj);
+	}
+	
+	public static class Builder {
+		private QlField key;
+		private QlConstraintValue value;
+		private QlConstraintOperator operation;
+		public QlField getKey() {
+			return key;
+		}
+		public Builder setKey(QlField key) {
+			this.key = key;
+			return this;
+		}
+		public Builder setKey(String name, String...subFieldNames) {
+			this.key = new QlField(name, subFieldNames);
+			return this;
+		}
+		public QlConstraintValue getValue() {
+			return value;
+		}
+		public Builder setValue(QlConstraintValue value) {
+			this.value = value;
+			return this;
+		}
+		public Builder setValue(String value) {
+			this.value = new QlConstraintValueString(value);
+			return this;
+		}
+		public Builder setValue(Number value) {
+			this.value = new QlConstraintValueNumber(value);
+			return this;
+		}
+		public Builder setValue(String value, String...others) {
+			List<QlConstraintValueString> list = Lists.newArrayList();
+			list.add(new QlConstraintValueString(value));
+			for (String s : others) {
+				list.add(new QlConstraintValueString(s));
+			}
+			this.value = new QlConstraintValueCollection<QlConstraintValueString>(list);
+			return this;
+		}
+		public Builder setValue(Number value, Number...others) {
+			List<QlConstraintValueNumber> list = Lists.newArrayList();
+			list.add(new QlConstraintValueNumber(value));
+			for (Number s : others) {
+				list.add(new QlConstraintValueNumber(s));
+			}
+			this.value = new QlConstraintValueCollection<QlConstraintValueNumber>(list);
+			return this;
+		}
+		public QlConstraintOperator getOperation() {
+			return operation;
+		}
+		public Builder setOperation(QlConstraintOperator operation) {
+			this.operation = operation;
+			return this;
+		}
+		public QlConstraint build() {
+			return new QlConstraint(key, value, operation);
+		}
 	}
 }

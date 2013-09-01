@@ -64,4 +64,33 @@ public class QlSortClause {
 		return EqualsBuilder.reflectionEquals(this, obj);
 	}
 	
+	public static class Builder {
+		private QlField field;
+		private QlSortOrderType order;
+		public QlField getField() {
+			return field;
+		}
+		public Builder setField(QlField field) {
+			this.field = field;
+			return this;
+		}
+		public Builder setField(String name, String...subFieldNames) {
+			this.field = new QlField(name, subFieldNames);
+			return this;
+		}
+		public QlSortOrderType getOrder() {
+			return order;
+		}
+		public Builder setOrder(QlSortOrderType order) {
+			this.order = order;
+			return this;
+		}
+		public Builder setOrder(String lookupName) {
+			this.order = QlSortOrderType.get(lookupName);
+			return this;
+		}
+		public QlSortClause build() {
+			return new QlSortClause(field, order);
+		}
+	}
 }

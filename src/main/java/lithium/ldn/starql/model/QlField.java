@@ -14,8 +14,13 @@
 
 package lithium.ldn.starql.model;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author David Esposito
@@ -77,5 +82,20 @@ public class QlField {
 		return EqualsBuilder.reflectionEquals(this, obj);
 	}
 	
-
+	public static class CollectionBuilder {
+		private List<QlField> fields = Lists.newArrayList();
+		public List<QlField> getFields() {
+			return fields;
+		}
+		public CollectionBuilder add(String name, String...subFieldNames) {
+			return add(new QlField(name, subFieldNames));
+		}
+		public CollectionBuilder add(QlField field) {
+			fields.add(field);
+			return this;
+		}
+		public List<QlField> build() {
+			return Collections.unmodifiableList(fields);
+		}
+	}
 }
