@@ -25,11 +25,12 @@ import lithium.ldn.starql.model.QlConstraintOperator;
 import lithium.ldn.starql.model.QlConstraintPairOperator;
 import lithium.ldn.starql.model.QlConstraintValue;
 import lithium.ldn.starql.model.QlConstraintValueCollection;
+import lithium.ldn.starql.model.QlConstraintValueDate;
 import lithium.ldn.starql.model.QlConstraintValueNumber;
 import lithium.ldn.starql.model.QlConstraintValueString;
 import lithium.ldn.starql.model.QlField;
-import lithium.ldn.starql.model.QlSelectStatement;
 import lithium.ldn.starql.model.QlPageConstraints;
+import lithium.ldn.starql.model.QlSelectStatement;
 import lithium.ldn.starql.model.QlSortClause;
 import lithium.ldn.starql.model.QlSortOrderType;
 
@@ -43,6 +44,7 @@ import org.codehaus.jparsec.functors.Tuple3;
 import org.codehaus.jparsec.functors.Tuple5;
 import org.codehaus.jparsec.pattern.Patterns;
 
+import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.Lists;
 
 /**
@@ -289,7 +291,8 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * @return The value, an integer, quoted string without the quotes, or collection.
 	 */
 	protected Parser<QlConstraintValue> constraintValueParser() {
-		return Parsers.or(numericalValueParser(), 
+		return Parsers.or(dateValueParser(),
+				numericalValueParser(), 
 				collectionValueParser(),
 				stringValueParser()
 				);
@@ -386,6 +389,17 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 							return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length()-1)));
 						}
 						return new QlConstraintValueNumber(Integer.parseInt(arg0));
+					}
+				});
+	}
+	
+	
+	protected Parser<QlConstraintValueDate> dateValueParser() {
+		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}")
+				.map(new Map<String, QlConstraintValueDate>(){
+					@Override
+					public QlConstraintValueDate map(String arg0) {
+						return new QlConstraintValueDate(ISO8601Utils.parse(arg0));
 					}
 				});
 	}

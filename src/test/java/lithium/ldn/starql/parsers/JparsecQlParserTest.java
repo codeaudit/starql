@@ -26,6 +26,7 @@ import static lithium.ldn.starql.model.QlConstraintPairOperator.OR;
 import static lithium.ldn.starql.model.QlSortOrderType.ASC;
 import static lithium.ldn.starql.model.QlSortOrderType.DESC;
 
+import java.util.Date;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -36,6 +37,7 @@ import lithium.ldn.starql.model.QlConstraintOperator;
 import lithium.ldn.starql.model.QlConstraintPair;
 import lithium.ldn.starql.model.QlConstraintValue;
 import lithium.ldn.starql.model.QlConstraintValueCollection;
+import lithium.ldn.starql.model.QlConstraintValueDate;
 import lithium.ldn.starql.model.QlConstraintValueNumber;
 import lithium.ldn.starql.model.QlConstraintValueString;
 import lithium.ldn.starql.model.QlField;
@@ -47,6 +49,7 @@ import lithium.ldn.starql.model.QlSortOrderType;
 import org.codehaus.jparsec.error.ParserException;
 import org.junit.Assert;
 
+import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.Lists;
 
 /**
@@ -458,6 +461,22 @@ public class JparsecQlParserTest extends TestCase {
 		Exception expected = null;
 		try {
 			inst.constraintValueParser().parse(var);
+		} catch (ParserException e) {
+			expected = e;
+		}
+		Assert.assertNotNull(expected);
+	}
+	
+	public final void test_variable18() {
+		Date now = new Date();
+		String dateString = ISO8601Utils.format(now);
+		Exception expected = null;
+		try {
+			QlConstraintValue var = inst.constraintValueParser().parse(dateString);
+			assertTrue(var.isA(QlConstraintValueDate.class));
+			QlConstraintValueDate dateVar = var.asA(QlConstraintValueDate.class);
+			assertNotNull(dateVar);
+			assertEquals(dateString, dateVar.getValueString());
 		} catch (ParserException e) {
 			expected = e;
 		}
