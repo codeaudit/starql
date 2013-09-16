@@ -48,4 +48,9 @@ public class QlConstraintValueCollection<TypeT extends QlConstraintValue> extend
 		return value.iterator();
 	}
 
+	@Override
+	public Object get() {
+		return getValue();
+	}
+
 }

@@ -34,4 +34,9 @@ public class QlConstraintValueString extends QlConstraintValue {
 		return value != null ? value.toString() : null;
 	}
 
+	@Override
+	public Object get() {
+		return getValue();
+	}
+
 }

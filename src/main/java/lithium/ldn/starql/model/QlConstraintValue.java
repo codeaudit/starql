@@ -34,6 +34,8 @@ public abstract class QlConstraintValue {
 			return null;
 		}
 	}
+	
+	public abstract Object get();
 
 	@Override
 	public int hashCode() {

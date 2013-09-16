@@ -395,7 +395,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	
 	protected Parser<QlConstraintValueDate> dateValueParser() {
-		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}")
+		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?")
 				.map(new Map<String, QlConstraintValueDate>(){
 					@Override
 					public QlConstraintValueDate map(String arg0) {

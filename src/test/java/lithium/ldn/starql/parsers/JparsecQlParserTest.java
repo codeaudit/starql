@@ -470,17 +470,11 @@ public class JparsecQlParserTest extends TestCase {
 	public final void test_variable18() {
 		Date now = new Date();
 		String dateString = ISO8601Utils.format(now);
-		Exception expected = null;
-		try {
-			QlConstraintValue var = inst.constraintValueParser().parse(dateString);
-			assertTrue(var.isA(QlConstraintValueDate.class));
-			QlConstraintValueDate dateVar = var.asA(QlConstraintValueDate.class);
-			assertNotNull(dateVar);
-			assertEquals(dateString, dateVar.getValueString());
-		} catch (ParserException e) {
-			expected = e;
-		}
-		Assert.assertNotNull(expected);
+		QlConstraintValue var = inst.constraintValueParser().parse(dateString);
+		assertTrue(var.isA(QlConstraintValueDate.class));
+		QlConstraintValueDate dateVar = var.asA(QlConstraintValueDate.class);
+		assertNotNull(dateVar);
+		assertEquals(dateString, dateVar.getValueString());
 	}
 	
 	private final QlConstraintValueCollection<QlConstraintValue> getConstraintValueCollection(String...values) {
@@ -567,6 +561,10 @@ public class JparsecQlParserTest extends TestCase {
 		return new QlConstraint(new QlField(key), new QlConstraintValueNumber(value), op);
 	}
 	
+	private final QlConstraint getDateConstraint(String key, Date value, QlConstraintOperator op) {
+		return new QlConstraint(new QlField(key), new QlConstraintValueDate(value), op);
+	}
+	
 	private final QlConstraint getCollectionConstraint(QlField field, QlConstraintOperator op) {
 		return new QlConstraint(field, new QlConstraintValueCollection<QlConstraintValue>(), op);
 	}
@@ -605,6 +603,18 @@ public class JparsecQlParserTest extends TestCase {
 	public final void test_constraints2() {
 		QlBooleanConstraintNode expected = getNumberConstraint("age", 25, GREATER_THAN);
 		runConstraintsTest("age>25", expected);
+	}
+
+	public final void test_constraints2a() {
+		Date date = new Date();
+		QlBooleanConstraintNode expected = getDateConstraint("date", date, GREATER_THAN);
+		runConstraintsTest("date>" + ISO8601Utils.format(date), expected);
+	}
+
+	public final void test_constraints2b() {
+		Date date = new Date();
+		QlBooleanConstraintNode expected = getDateConstraint("date", date, LESS_THAN);
+		runConstraintsTest("date<" + ISO8601Utils.format(date), expected);
 	}
 
 	public final void test_constraints3() {
@@ -896,6 +906,63 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		}
+	}
+	public final void test_qlSelectStatement_simpleDateWhere() {
+		Date start = new Date(new Date().getTime() - (60 * 60 * 24));
+		Date end = new Date();
+		String startString = ISO8601Utils.format(start);
+		String endString = ISO8601Utils.format(end);
+		String query = String.format("SELECT * FROM users WHERE date >= %1$s AND date <= %2$s", 
+				startString, endString);
+		List<QlField> fields = getFields();
+		String table = "users";
+		QlBooleanConstraintNode constraints = new QlConstraintPair(
+				getDateConstraint("date", start, GREATER_THAN_EQUAL),
+				getDateConstraint("date", end, LESS_THAN_EQUAL),
+				AND);
+		QlSortClause sortConstraint = null;
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+		QlSelectStatement expected = new QlSelectStatement(fields, 
+				table, 
+				constraints, 
+				sortConstraint, 
+				pageConstraints);
+		try {
+			QlSelectStatement parseQlSelect = inst.parseQlSelect(query);
+			Assert.assertEquals(expected, parseQlSelect);
+		} catch (InvalidQueryException e) {
+			e.printStackTrace();
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		}
+	}
+	
+	public final void test_qlSelectStatement_fieldsDateWhere() {
+		Date start = new Date(new Date().getTime() - (60 * 60 * 24));
+		Date end = new Date();
+		String startString = ISO8601Utils.format(start);
+		String endString = ISO8601Utils.format(end);
+		String query = String.format("SELECT uid,login, email,firstName FROM users WHERE registerDate >= %1$s AND registerDate <= %2$s", 
+				startString, endString);
+		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		String table = "users";
+		QlBooleanConstraintNode constraints = new QlConstraintPair(
+				getDateConstraint("registerDate", start, GREATER_THAN_EQUAL),
+				getDateConstraint("registerDate", end, LESS_THAN_EQUAL),
+				AND);
+		QlSortClause sortConstraint = null;
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+		QlSelectStatement expected = new QlSelectStatement(fields, 
+				table, 
+				constraints, 
+				sortConstraint, 
+				pageConstraints);
+		try {
+			QlSelectStatement parseQlSelect = inst.parseQlSelect(query);
+			Assert.assertEquals(expected, parseQlSelect);
+		} catch (InvalidQueryException e) {
+			e.printStackTrace();
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
