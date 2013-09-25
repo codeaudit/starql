@@ -6,7 +6,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>dev.ldn.starql</name>
 	<description>Generic version of LiQL</description>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>jparsec</groupId>
@@ -47,4 +47,18 @@
 			<version>2.2.3</version>
 		</dependency>
 	</dependencies>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>lithium-snapshots</id>
+			<name>Lithium Snapshots</name>
+			<url>http://nexus.dev.lithium.com/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>lithium-releases</id>
+			<name>Lithium Releases</name>
+			<url>scp://nexus.dev.lithium.com/home/lithium/sonatype-work/nexus/storage/releases</url>
+		</repository>
+	</distributionManagement>
+
 </project>
