@@ -388,14 +388,19 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 						if (arg0.contains("L")) {
 							return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length()-1)));
 						}
-						return new QlConstraintValueNumber(Integer.parseInt(arg0));
+						try {
+							return new QlConstraintValueNumber(Integer.parseInt(arg0));
+						}
+						catch(NumberFormatException e) {
+							return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length()-1)));
+						}
 					}
 				});
 	}
 	
 	
 	protected Parser<QlConstraintValueDate> dateValueParser() {
-		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?")
+		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|(\\+|-)[0-9]{2}:[0-9]{2})?")
 				.map(new Map<String, QlConstraintValueDate>(){
 					@Override
 					public QlConstraintValueDate map(String arg0) {
