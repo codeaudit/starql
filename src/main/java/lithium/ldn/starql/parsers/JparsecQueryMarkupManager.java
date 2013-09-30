@@ -392,7 +392,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 							return new QlConstraintValueNumber(Integer.parseInt(arg0));
 						}
 						catch(NumberFormatException e) {
-							return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length()-1)));
+							return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length())));
 						}
 					}
 				});
