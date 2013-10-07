@@ -23,14 +23,14 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 public class QlSelectStatement implements QueryStatement{
 
-	private final List<QlField> fields;
+	private final List<QlFieldTree> fields;
 	private final String table;
 	private final QlBooleanConstraintNode constraints;
 	private final QlSortClause sortConstraint;
 	private final String queryString;
 	private final QlPageConstraints pageConstraints;
 
-	public final List<QlField> getFields() {
+	public final List<QlFieldTree> getFields() {
 		return fields;
 	}
 	
@@ -82,7 +82,7 @@ public class QlSelectStatement implements QueryStatement{
 		return hasOffsetConstraint() ? pageConstraints.getOffset() : 0;
 	}
 
-	public QlSelectStatement(List<QlField> fields, String table, QlBooleanConstraintNode constraints,
+	public QlSelectStatement(List<QlFieldTree> fields, String table, QlBooleanConstraintNode constraints,
 			QlSortClause sortConstraint, QlPageConstraints pageConstraints) {
 		this.fields = Collections.unmodifiableList(fields);
 		this.table = table;
@@ -110,7 +110,7 @@ public class QlSelectStatement implements QueryStatement{
 	
 	private String fieldsString() {
 		StringBuilder sb = new StringBuilder();
-		for (QlField f : fields) {
+		for (QlFieldTree f : fields) {
 			sb.append(f.getName()).append(",");
 		}
 		return sb.deleteCharAt(sb.length()-1).toString();
@@ -127,16 +127,16 @@ public class QlSelectStatement implements QueryStatement{
 	}
 	
 	public static class Builder {
-		private List<QlField> fields;
+		private List<QlFieldTree> fields;
 		private String table;
 		private QlBooleanConstraintNode constraints;
 		private QlSortClause sortConstraint;
 		private String queryString;
 		private QlPageConstraints pageConstraints;
-		public List<QlField> getFields() {
+		public List<QlFieldTree> getFields() {
 			return fields;
 		}
-		public Builder setFields(List<QlField> fields) {
+		public Builder setFields(List<QlFieldTree> fields) {
 			this.fields = fields;
 			return this;
 		}

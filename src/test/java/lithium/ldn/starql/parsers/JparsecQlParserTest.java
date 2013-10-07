@@ -33,6 +33,7 @@ import junit.framework.TestCase;
 import lithium.ldn.starql.exceptions.InvalidQueryException;
 import lithium.ldn.starql.model.QlBooleanConstraintNode;
 import lithium.ldn.starql.model.QlConstraint;
+import lithium.ldn.starql.model.QlField;
 import lithium.ldn.starql.model.QlConstraintOperator;
 import lithium.ldn.starql.model.QlConstraintPair;
 import lithium.ldn.starql.model.QlConstraintValue;
@@ -40,7 +41,7 @@ import lithium.ldn.starql.model.QlConstraintValueCollection;
 import lithium.ldn.starql.model.QlConstraintValueDate;
 import lithium.ldn.starql.model.QlConstraintValueNumber;
 import lithium.ldn.starql.model.QlConstraintValueString;
-import lithium.ldn.starql.model.QlField;
+import lithium.ldn.starql.model.QlFieldTree;
 import lithium.ldn.starql.model.QlSelectStatement;
 import lithium.ldn.starql.model.QlPageConstraints;
 import lithium.ldn.starql.model.QlSortClause;
@@ -91,59 +92,40 @@ public class JparsecQlParserTest extends TestCase {
 	 * 		FIELD
 	 * ===================================================
 	 */
-	public final void test_field() {
+	public final void test_constraintField() {
 		try {
 			String word = "";
-			inst.fieldParser().parse(word);
+			inst.constraintFieldParser().parse(word);
 			Assert.fail("Field cannot be blank");
 		} catch (ParserException e) { }
 	}
 	
-	public final void test_field1() {
-		runFieldTest("messages", "messages", false);
+	public final void test_constraintField1() {
+		runConstraintFieldTest("messages", "messages");
 	}
 	
-	public final void test_field2() {
-		runFieldTest("users", "users", false);
+	public final void test_constraintField2() {
+		runConstraintFieldTest("users", "users");
 	}
 	
-	public final void test_field3() {
-		runFieldTest("board.id", "board", false);
+	public final void test_constraintField3() {
+		runConstraintFieldTest("board.id", "board");
 	}
 	
-	public final void test_field4() {
-		runFieldTest("message.parent.author.uid", "message", false);
+	public final void test_constraintField4() {
+		runConstraintFieldTest("message.parent.author.uid", "message");
 	}
 	
-	private final void runFieldTest(String word, String name, boolean isStar) {
-		QlField qlField = inst.fieldParser().parse(word);
+	private final void runConstraintFieldTest(String word, String name) {
+		QlField qlField = inst.constraintFieldParser().parse(word);
 		Assert.assertNotNull(qlField);
 		Assert.assertEquals(word, qlField.getQualifiedName());
 		Assert.assertEquals(name, qlField.getName());
-		Assert.assertEquals(isStar, qlField.isStar());
 	}
 	
-	public final void test_fieldStar() {
-		try {
-			String word = "";
-			inst.fieldStarParser().parse(word);
-			Assert.fail("FieldStar cannot be blank");
-		} catch (ParserException e) { }
-	}
-
-	public final void test_fieldStar1() {
-		String word = "*";
-		List<QlField> qlFieldList = inst.fieldStarParser().parse(word);
-		Assert.assertEquals(1, qlFieldList.size());
-		QlField qlField = qlFieldList.get(0);
-		Assert.assertNotNull(qlField);
-		Assert.assertEquals(word, qlField.getName());
-		Assert.assertTrue(qlField.isStar());
-	}
-
 	/*
 	 * ===================================================
-	 * 		FIELDS
+	 * 		FIELD TREE
 	 * ===================================================
 	 */
 	public final void test_fields() {
@@ -171,11 +153,23 @@ public class JparsecQlParserTest extends TestCase {
 	}
 	
 	public final void test_fields5() {
+		runFieldsTest("board(id)", 1, false);
+	}
+	
+	public final void test_fields5a() {
+		runFieldsTest("board(id,name)", 1, false);
+	}
+	
+	public final void test_fields6() {
+		runFieldsTest("message(parent(author(uid)))", 1, false);
+	}
+	
+	public final void test_fields7() {
 		runFieldsTest("*", 1, true);
 	}
 	
 	private final void runFieldsTest(String fieldsString, int count, boolean isStar) {
-		List<QlField> fields = inst.fieldsParser().parse(fieldsString);
+		List<QlFieldTree> fields = inst.fieldsParser().parse(fieldsString);
 		Assert.assertNotNull(fields);
 		Assert.assertEquals(count, fields.size());
 		Assert.assertEquals(isStar, fields.get(0).isStar());
@@ -693,7 +687,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_simple() {
 		String query = "SELECT * FROM users";
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = null;
@@ -710,20 +704,20 @@ public class JparsecQlParserTest extends TestCase {
 		}
 	}
 	
-	private List<QlField> getFields(String...fieldNames) {
+	private List<QlFieldTree> getFields(String...fieldNames) {
 		if (fieldNames.length == 0) {
-			return Lists.newArrayList(new QlField("*"));
+			return Lists.newArrayList(new QlFieldTree("*"));
 		}
-		List<QlField> fields = Lists.newArrayList();
+		List<QlFieldTree> fields = Lists.newArrayList();
 		for (String name : fieldNames) {
-			fields.add(new QlField(name));
+			fields.add(new QlFieldTree(name));
 		}
 		return fields;
 	}
 	
 	public final void test_qlSelectStatement_fields() {
 		String query = "SELECT uid,login, email,firstName FROM users";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = null;
@@ -747,7 +741,7 @@ public class JparsecQlParserTest extends TestCase {
 	 */
 	public final void test_qlSelectStatement_simpleOrderBy() {
 		String query = "SELECT * FROM users SORT BY date ASC";
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = getSortClause("date", ASC);
@@ -766,7 +760,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_fieldsOrderBy() {
 		String query = "SELECT uid,login, email,firstName FROM users SORT BY email DESC";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = getSortClause("email", DESC);
@@ -790,7 +784,7 @@ public class JparsecQlParserTest extends TestCase {
 	 */
 	public final void test_qlSelectStatement_simpleLimit() {
 		String query = "SELECT * FROM users LIMIT 10";
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = null;
@@ -809,7 +803,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_fieldsLimitOffset() {
 		String query = "SELECT uid,login, email,firstName FROM users LIMIT 30 OFFSET 10";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = null;
@@ -828,7 +822,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_simpleSortLimit() {
 		String query = "SELECT * FROM users SORT BY date ASC LIMIT 100";
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = getSortClause("date", ASC);
@@ -847,7 +841,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_fieldsSortLimitOffset() {
 		String query = "SELECT uid,login, email,firstName FROM users SORT BY email DESC LIMIT 100 OFFSET 1000";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = getSortClause("email", DESC);
@@ -871,7 +865,7 @@ public class JparsecQlParserTest extends TestCase {
 	 */
 	public final void test_qlSelectStatement_simpleSingleWhere() {
 		String query = "SELECT * FROM users WHERE email='david.esposito@lithium.com'";
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = getStringConstraint("email", "david.esposito@lithium.com", EQUALS);
 		QlSortClause sortConstraint = null;
@@ -890,7 +884,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_fieldsTwoWhere() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				getStringConstraint("name", "david", EQUALS),
@@ -916,7 +910,7 @@ public class JparsecQlParserTest extends TestCase {
 		String endString = ISO8601Utils.format(end);
 		String query = String.format("SELECT * FROM users WHERE date >= %1$s AND date <= %2$s", 
 				startString, endString);
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				getDateConstraint("date", start, GREATER_THAN_EQUAL),
@@ -945,7 +939,7 @@ public class JparsecQlParserTest extends TestCase {
 		String endString = ISO8601Utils.format(end);
 		String query = String.format("SELECT uid,login, email,firstName FROM users WHERE registerDate >= %1$s AND registerDate <= %2$s", 
 				startString, endString);
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				getDateConstraint("registerDate", start, GREATER_THAN_EQUAL),
@@ -969,7 +963,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_simpleSingleWhereSort() {
 		String query = "SELECT * FROM users WHERE email='david.esposito@lithium.com' SORT BY date ASC";
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = getStringConstraint("email", "david.esposito@lithium.com", EQUALS);
 		QlSortClause sortConstraint = getSortClause("date", ASC);
@@ -988,7 +982,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_fieldsTwoWhereSort() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50 SORT BY email DESC";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				getStringConstraint("name", "david", EQUALS),
@@ -1010,7 +1004,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_fieldsTwoWhereLimit() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50 LIMIT 50";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				getStringConstraint("name", "david", EQUALS),
@@ -1032,7 +1026,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_simpleThreeWhereLimit() {
 		String query = "SELECT * FROM users WHERE name='david' AND age<50 OR login!='davidE' LIMIT 10";
-		List<QlField> fields = getFields();
+		List<QlFieldTree> fields = getFields();
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				new QlConstraintPair(
@@ -1057,7 +1051,7 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_qlSelectStatement_fieldsThreeLimitOffset() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50 OR login!='davidE' LIMIT 30 OFFSET 10";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				new QlConstraintPair(
@@ -1082,7 +1076,7 @@ public class JparsecQlParserTest extends TestCase {
 		
 	public final void test_qlSelectStatement_fieldsThreeSort() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50 OR login!='davidE' SORT BY age DESC";
-		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		List<QlFieldTree> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
 		QlBooleanConstraintNode constraints = new QlConstraintPair(
 				new QlConstraintPair(

@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import lithium.ldn.starql.exceptions.InvalidQueryException;
 import lithium.ldn.starql.model.QlBooleanConstraintNode;
 import lithium.ldn.starql.model.QlField;
+import lithium.ldn.starql.model.QlFieldTree;
 import lithium.ldn.starql.model.QlSelectStatement;
 import lithium.ldn.starql.model.QlPageConstraints;
 import lithium.ldn.starql.model.QlSortClause;
@@ -40,7 +41,7 @@ public class QlParserTest extends TestCase {
 	public final void test_QlParser_Simple1() throws InvalidQueryException {
 		String query = "SELECT * FROM messages";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
-		List<QlField> fields = Lists.newArrayList(new QlField("*"));
+		List<QlFieldTree> fields = Lists.newArrayList(new QlFieldTree("*"));
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortClause = null;
 		QlSelectStatement expected = new QlSelectStatement(fields, 
@@ -54,7 +55,7 @@ public class QlParserTest extends TestCase {
 	public final void test_QlParser_Simple2() throws InvalidQueryException {
 		String query = "SELECT id FROM messages";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
-		List<QlField> fields = Lists.newArrayList(new QlField("id"));
+		List<QlFieldTree> fields = Lists.newArrayList(new QlFieldTree("id"));
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortClause = null;
 		QlSelectStatement expected = new QlSelectStatement(fields, 
@@ -68,9 +69,9 @@ public class QlParserTest extends TestCase {
 	public final void test_QlParser_Simple3() throws InvalidQueryException {
 		String query = "SELECT id,author,board FROM messages";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
-		List<QlField> fields = Lists.newArrayList(new QlField("id"),
-				new QlField("author"),
-				new QlField("board"));
+		List<QlFieldTree> fields = Lists.newArrayList(new QlFieldTree("id"),
+				new QlFieldTree("author"),
+				new QlFieldTree("board"));
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortClause = null;
 		QlSelectStatement expected = new QlSelectStatement(fields, 
@@ -114,7 +115,7 @@ public class QlParserTest extends TestCase {
 	public final void test_QlParser_Sorted1() throws InvalidQueryException {
 		String query = "SELECT * FROM messages SORT BY date ASC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
-		List<QlField> fields = Lists.newArrayList(new QlField("*"));
+		List<QlFieldTree> fields = Lists.newArrayList(new QlFieldTree("*"));
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortClause = new QlSortClause(new QlField("date"), ASC);
 		QlSelectStatement expected = new QlSelectStatement(fields, 
@@ -128,7 +129,7 @@ public class QlParserTest extends TestCase {
 	public final void test_QlParser_Sorted2() throws InvalidQueryException {
 		String query = "SELECT id FROM messages SORT BY date DESC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
-		List<QlField> fields = Lists.newArrayList(new QlField("id"));
+		List<QlFieldTree> fields = Lists.newArrayList(new QlFieldTree("id"));
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortClause = new QlSortClause(new QlField("date"), DESC);
 		QlSelectStatement expected = new QlSelectStatement(fields, 
@@ -142,9 +143,9 @@ public class QlParserTest extends TestCase {
 	public final void test_QlParser_Sorted3() throws InvalidQueryException {
 		String query = "SELECT id,author,board FROM messages SORT BY date ASC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
-		List<QlField> fields = Lists.newArrayList(new QlField("id"),
-				new QlField("author"),
-				new QlField("board"));
+		List<QlFieldTree> fields = Lists.newArrayList(new QlFieldTree("id"),
+				new QlFieldTree("author"),
+				new QlFieldTree("board"));
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortClause = new QlSortClause(new QlField("date"), ASC);
 		QlSelectStatement expected = new QlSelectStatement(fields, 

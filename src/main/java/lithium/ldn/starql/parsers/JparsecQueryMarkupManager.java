@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import lithium.ldn.starql.exceptions.InvalidQueryException;
 import lithium.ldn.starql.model.QlBooleanConstraintNode;
 import lithium.ldn.starql.model.QlConstraint;
+import lithium.ldn.starql.model.QlField;
 import lithium.ldn.starql.model.QlConstraintOperator;
 import lithium.ldn.starql.model.QlConstraintPairOperator;
 import lithium.ldn.starql.model.QlConstraintValue;
@@ -28,7 +29,7 @@ import lithium.ldn.starql.model.QlConstraintValueCollection;
 import lithium.ldn.starql.model.QlConstraintValueDate;
 import lithium.ldn.starql.model.QlConstraintValueNumber;
 import lithium.ldn.starql.model.QlConstraintValueString;
-import lithium.ldn.starql.model.QlField;
+import lithium.ldn.starql.model.QlFieldTree;
 import lithium.ldn.starql.model.QlPageConstraints;
 import lithium.ldn.starql.model.QlSelectStatement;
 import lithium.ldn.starql.model.QlSortClause;
@@ -74,10 +75,10 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				padWithWhitespace(whereClauseParser().optional(), true), 
 				padWithWhitespace(orderByParser().optional(), false),
 				padWithWhitespace(pageConstraintParser().optional(), false))
-			.map(new Map<Tuple5<List<QlField>, String, QlBooleanConstraintNode, QlSortClause, QlPageConstraints>, 
+			.map(new Map<Tuple5<List<QlFieldTree>, String, QlBooleanConstraintNode, QlSortClause, QlPageConstraints>, 
 					QlSelectStatement>() {
 						@Override
-						public QlSelectStatement map(Tuple5<List<QlField>, String, QlBooleanConstraintNode, 
+						public QlSelectStatement map(Tuple5<List<QlFieldTree>, String, QlBooleanConstraintNode, 
 								QlSortClause, QlPageConstraints> arg0) {
 							return new QlSelectStatement(arg0.a, arg0.b, arg0.c, arg0.d, arg0.e);
 						}
@@ -86,18 +87,52 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 
 	/*
 	 * ====================================================
-	 * 		FIELDS
+	 * 		FIELD TREE
 	 * ====================================================
 	 */
-	protected Parser<List<QlField>> fieldsParser() {
+	protected Parser<List<QlFieldTree>> fieldsParser() {
 		return Parsers.or(fieldStarParser(), fieldCollectionParser());
 	}
 	
-	protected Parser<List<QlField>> fieldCollectionParser() {
-		return fieldParser().sepBy1(padWithWhitespace(keyword(","), false));
+	protected Parser<List<QlFieldTree>> fieldCollectionParser() {
+		Parser.Reference<List<QlFieldTree>> ref = Parser.newReference();
+		Parser<List<QlFieldTree>> parser = fieldParser(ref.lazy()).sepBy1(padWithWhitespace(keyword(","), false));
+		ref.set(parser);
+		return parser;
 	}
 	
-	protected Parser<QlField> fieldParser() {
+	protected Parser<QlFieldTree> fieldParser(Parser<List<QlFieldTree>> fieldCollectionParser) {
+		Parser<QlFieldTree> parser = Parsers.tuple(alphaNumeric(), 
+					fieldCollectionParser.between(keyword("("), keyword(")")).optional(null))
+				.map(new Map<Pair<String, List<QlFieldTree>>, QlFieldTree>() {
+					@Override
+					public QlFieldTree map(Pair<String, List<QlFieldTree>> pair) {
+						String fieldName = pair.a;
+						if (fieldName.length() == 0) {
+							return null;
+						}
+						return new QlFieldTree(fieldName, pair.b);
+					}
+				});
+		return parser;
+	}
+	
+	protected Parser<List<QlFieldTree>> fieldStarParser() {
+		return paddedKeyword("*", true)
+				.map(new Map<String, List<QlFieldTree>>() {
+					@Override
+					public List<QlFieldTree> map(String arg0) {
+						return Lists.newArrayList(new QlFieldTree(arg0));
+					}
+				});
+	}
+
+	/*
+	 * ====================================================
+	 * 		FIELD
+	 * ====================================================
+	 */
+	protected Parser<QlField> constraintFieldParser() {
 		return alphaNumeric().sepBy1(keyword("."))
 				.map(new Map<List<String>, QlField>() {
 					@Override
@@ -114,16 +149,6 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				});
 	}
 	
-	protected Parser<List<QlField>> fieldStarParser() {
-		return paddedKeyword("*", true)
-				.map(new Map<String, List<QlField>>() {
-					@Override
-					public List<QlField> map(String arg0) {
-						return Lists.newArrayList(new QlField(arg0));
-					}
-				});
-	}
-	
 	/*
 	 * ====================================================
 	 * 		SORT BY
@@ -131,7 +156,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 */
 	protected Parser<QlSortClause> orderByParser() {
 		return paddedKeyword("SORT BY", false)
-				.next(Parsers.tuple(fieldParser(), sortOrderTypeParser()))
+				.next(Parsers.tuple(constraintFieldParser(), sortOrderTypeParser()))
 				.map(new Map<Pair<QlField, QlSortOrderType>, QlSortClause>() {
 						@Override
 						public QlSortClause map(Pair<QlField, QlSortOrderType> arg0) {
@@ -199,7 +224,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlBooleanConstraintNode> constraintParser() {
-		return Parsers.tuple(padWithWhitespace(fieldParser(), false), constraintOperatorParser(), 
+		return Parsers.tuple(padWithWhitespace(constraintFieldParser(), false), constraintOperatorParser(), 
 				constraintValueParser())
 				.map(new Map<Tuple3<QlField, QlConstraintOperator, QlConstraintValue>, QlBooleanConstraintNode>() {
 					@Override
