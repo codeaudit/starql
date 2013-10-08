@@ -72,6 +72,7 @@ public enum QlConstraintOperator {
 	 * @return Desired enum if exists, {@code UNKNOWN} otherwise.
 	 */
 	public static QlConstraintOperator get(String lookupName) {
+		lookupName = lookupName.toUpperCase();
 		QlConstraintOperator result = map.get(lookupName);
 		return result == null ? UNKNOWN : result;
 	}

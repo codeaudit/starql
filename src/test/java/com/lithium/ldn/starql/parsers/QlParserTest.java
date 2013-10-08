@@ -120,7 +120,7 @@ public class QlParserTest extends TestCase {
 	}
 	
 	public final void test_QlParser_Sorted1() throws InvalidQueryException {
-		String query = "SELECT * FROM messages SORT BY date ASC";
+		String query = "SELECT * FROM messages ORDER BY date ASC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("*"));
 		QlBooleanConstraintNode constraints = null;
@@ -136,7 +136,7 @@ public class QlParserTest extends TestCase {
 	}
 	
 	public final void test_QlParser_Sorted2() throws InvalidQueryException {
-		String query = "SELECT id FROM messages SORT BY date DESC";
+		String query = "SELECT id FROM messages ORDER BY date DESC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("id"));
 		QlBooleanConstraintNode constraints = null;
@@ -152,7 +152,7 @@ public class QlParserTest extends TestCase {
 	}
 	
 	public final void test_QlParser_Sorted3() throws InvalidQueryException {
-		String query = "SELECT id,author,board FROM messages SORT BY date ASC";
+		String query = "SELECT id,author,board FROM messages ORDER BY date ASC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("id"),
 				new QlField("author"),
@@ -170,7 +170,7 @@ public class QlParserTest extends TestCase {
 	}
 	
 	public final void test_QlParser_SortedFail1() {
-		String query = "SELECT * FROM messages SORTBY date ASC";
+		String query = "SELECT * FROM messages ORDERBY date ASC";
 		try {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
@@ -180,7 +180,7 @@ public class QlParserTest extends TestCase {
 	}
 	
 	public final void test_QlParser_SortedFail2() {
-		String query = "SELECT * FROM messages SORT BY ASC";
+		String query = "SELECT * FROM messages ORDER BY ASC";
 		try {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
@@ -190,7 +190,7 @@ public class QlParserTest extends TestCase {
 	}
 	
 	public final void test_QlParser_SortedFail3() {
-		String query = "SELECT * FROM messages ORDER BY date ASCENDING";
+		String query = "SELECT * FROM messages SORT BY date ASCENDING";
 		try {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {

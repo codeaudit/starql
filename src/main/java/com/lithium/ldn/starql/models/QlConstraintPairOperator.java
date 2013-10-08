@@ -47,6 +47,7 @@ public enum QlConstraintPairOperator implements Binary<QlBooleanConstraintNode> 
 	}
 	
 	public static QlConstraintPairOperator get(String lookupName) {
+		lookupName = lookupName.toUpperCase();
 		QlConstraintPairOperator result = map.get(lookupName);
 		return result == null ? UNKNOWN : result;
 	}

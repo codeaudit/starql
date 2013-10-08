@@ -1,5 +1,7 @@
 package com.lithium.ldn.starql.parsers;
 
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,7 +56,8 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * ====================================================
 	 */	
 	protected Parser<QlSelectStatement> qlSelectParser() {
-		return paddedKeyword("SELECT", true).next(Parsers.tuple(fieldsParser().followedBy(paddedKeyword("FROM", true)), 
+		return paddedRegex("SELECT", true, false)
+			.next(Parsers.tuple(fieldsParser().followedBy(paddedRegex("FROM", true, false)), 
 				alphaNumeric(), 
 				padWithWhitespace(whereClauseParser().optional(), true), 
 				padWithWhitespace(orderByParser().optional(), false),
@@ -85,11 +88,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<List<QlField>> fieldCollectionParser() {
-		return fieldParser().sepBy1(padWithWhitespace(keyword(","), false));
+		return fieldParser().sepBy1(padWithWhitespace(regex(",", true), false));
 	}
 	
 	protected Parser<QlField> fieldParser() {
-		return alphaNumeric().sepBy1(keyword("."))
+		return alphaNumeric().sepBy1(regex("\\.", true))
 				.map(new Map<List<String>, QlField>() {
 					@Override
 					public QlField map(List<String> fieldNames) {
@@ -106,7 +109,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<List<QlField>> fieldStarParser() {
-		return paddedKeyword("*", true)
+		return paddedRegex("\\*", true, true)
 				.map(new Map<String, List<QlField>>() {
 					@Override
 					public List<QlField> map(String arg0) {
@@ -117,11 +120,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	/*
 	 * ====================================================
-	 * 		SORT BY
+	 * 		ORDER BY
 	 * ====================================================
 	 */
 	protected Parser<QlSortClause> orderByParser() {
-		return paddedKeyword("SORT BY", false)
+		return paddedRegex("ORDER BY", false, false)
 				.next(Parsers.tuple(fieldParser(), sortOrderTypeParser()))
 				.map(new Map<Pair<QlField, QlSortOrderType>, QlSortClause>() {
 						@Override
@@ -132,7 +135,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlSortOrderType> sortOrderTypeParser() {
-		return paddedRegex("[a-zA-Z]+", true)
+		return paddedRegex("[a-z]+", true, false)
 				.map(new Map<String, QlSortOrderType>() {
 					@Override
 					public QlSortOrderType map(String arg0) {
@@ -158,11 +161,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<Integer> limitParser() {
-		return keywordIntegerPair("LIMIT", false);
+		return regexIntegerPair("LIMIT", false);
 	}
 	
 	protected Parser<Integer> offsetParser() {
-		return keywordIntegerPair("OFFSET", false);
+		return regexIntegerPair("OFFSET", false);
 	}
 	
 	/*
@@ -171,7 +174,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * ====================================================
 	 */
 	protected Parser<QlBooleanConstraintNode> whereClauseParser() {
-		return paddedKeyword("WHERE", false).next(constraintsParser());
+		return paddedRegex("WHERE", false, false).next(constraintsParser());
 	}
 
 	protected Parser<QlBooleanConstraintNode> constraintsParser() {
@@ -180,11 +183,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlConstraintPairOperator> constraintPairOperatorParser() {
-		return padWithWhitespace(regex("(AND|OR)"), false)
+		return regex("(AND|OR) ", false)
 				.map(new Map<String, QlConstraintPairOperator>() {
 					@Override
 					public QlConstraintPairOperator map(String arg0) {
-						return QlConstraintPairOperator.get(arg0);
+						return QlConstraintPairOperator.get(arg0.trim());
 					}
 				});
 	}
@@ -201,7 +204,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlConstraintOperator> constraintOperatorParser() {
-		return paddedRegex("(!=|=|<=|>=|<|>|IN)", false)
+		return paddedRegex("(!=|=|<=|>=|<|>|IN)", false, false)
 				.map(new Map<String, QlConstraintOperator>() {
 					@Override
 					public QlConstraintOperator map(String arg0) {
@@ -234,24 +237,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * @return The alpha-numberic string that was parsed.
 	 */
 	protected Parser<String> alphaNumeric() {
-		return regex("[a-zA-Z_][a-zA-Z0-9_]*");
+		return regex("[a-zA-Z_][a-zA-Z0-9_]*", false);
 	}
 	
-	/**
-	 * This is a non-padded keyword literal that is case sensitive.
-	 * @param keyword
-	 * @return The keyword that was parsed.
-	 */
-	protected Parser<String> keyword(String keyword) {
-		return Scanners.string(keyword).source();
-	}
-	
-	protected Parser<String> paddedKeyword(String keyword, boolean leadingWhitespace) {
-		return padWithWhitespace(keyword(keyword), leadingWhitespace);
-	}
-
-	protected Parser<Integer> keywordIntegerPair(String keyword, boolean leadingWhiteSpace) {
-		return paddedKeyword(keyword, leadingWhiteSpace).next(Scanners.INTEGER)
+	protected Parser<Integer> regexIntegerPair(String keyword, boolean isCaseSensitive) {
+		return paddedRegex(keyword, false, isCaseSensitive).next(Scanners.INTEGER)
 				.map(new Map<String, Integer>() {
 					@Override
 					public Integer map(String arg0) {
@@ -260,20 +250,21 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				});
 	}
 	
-	protected Parser<String> paddedRegex(String pattern, boolean leadingWhitespace) {
-		return paddedRegex(pattern, "regexParser: " + pattern, leadingWhitespace);
+	protected Parser<String> paddedRegex(String pattern, boolean leadingWhitespace, boolean isCaseSensitive) {
+		return paddedRegex(pattern, "regexParser: " + pattern, leadingWhitespace, isCaseSensitive);
 	}
 	
-	protected Parser<String> regex(String pattern) {
-		return regex(pattern, "regexParser: " + pattern);
+	protected Parser<String> regex(String pattern, boolean isCaseSensitive) {
+		return regex(pattern, "regexParser: " + pattern, isCaseSensitive);
 	}
 	
-	protected Parser<String> paddedRegex(String pattern, String name, boolean leadingWhitespace) {
-		return padWithWhitespace(Scanners.pattern(Patterns.regex(pattern), name).source(), leadingWhitespace);
+	protected Parser<String> paddedRegex(String pattern, String name, boolean leadingWhitespace, boolean isCaseSensitive) {
+		return padWithWhitespace(regex(pattern, isCaseSensitive).source(), leadingWhitespace);
 	}
 	
-	protected Parser<String> regex(String pattern, String name) {
-		return Scanners.pattern(Patterns.regex(pattern), name).source();
+	protected Parser<String> regex(String pattern, String name, boolean isCaseSensitive) {
+		Pattern p = Pattern.compile(pattern, isCaseSensitive ? 0 : CASE_INSENSITIVE);
+		return Scanners.pattern(Patterns.regex(p), name).source();
 	}
 	
 	/**
@@ -345,8 +336,8 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * @return ConstraintValueCollection containing ConstraintValues *MAY BE OF DIFFERENT TYPES*
 	 */
 	protected Parser<QlConstraintValueCollection<? extends QlConstraintValue>> collectionValueParser() {
-		return padWithWhitespace(Parsers.or(stringValueParser(), numericalValueParser()), false).sepBy(padWithWhitespace(keyword(","), false))
-				.between(padWithWhitespace(keyword("("), false), padWithWhitespace(keyword(")"), false))
+		return padWithWhitespace(Parsers.or(stringValueParser(), numericalValueParser()), false).sepBy(padWithWhitespace(regex(",", true), false))
+				.between(padWithWhitespace(regex("\\(", true), false), padWithWhitespace(regex("\\)", true), false))
 				.map(new Map<List<QlConstraintValue>, QlConstraintValueCollection<? extends QlConstraintValue>>(){
 
 					@Override
@@ -366,7 +357,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * @return The matched string
 	 */
 	protected Parser<QlConstraintValueNumber> numericalValueParser() {
-		return regex("([0-9]+\\.[0-9]+f?|[1-9][0-9]*L?)")
+		return regex("([0-9]+\\.[0-9]+f?|[1-9][0-9]*L?)", false)
 				.map(new Map<String, QlConstraintValueNumber>(){
 					@Override
 					public QlConstraintValueNumber map(String arg0) {
@@ -391,7 +382,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	
 	protected Parser<QlConstraintValueDate> dateValueParser() {
-		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|(\\+|-)[0-9]{2}:[0-9]{2})?")
+		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|(\\+|-)[0-9]{2}:[0-9]{2})?", true)
 				.map(new Map<String, QlConstraintValueDate>(){
 					@Override
 					public QlConstraintValueDate map(String arg0) {
