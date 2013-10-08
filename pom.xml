@@ -56,6 +56,11 @@
 			</extension>
 		</extensions>
 	</build>
+	<scm>
+        <connection>scm:svn:svn+ssh://svn.dev.lithium.com/home/svn/trunk/tools/maven_release_test</connection>
+        <developerConnection>scm:svn:svn+ssh://svn.dev.lithium.com/home/svn/trunk/tools/maven_release_test</developerConnection>
+        <url>scm:svn:svn+ssh://svn.dev.lithium.com/home/svn/trunk/tools/maven_release_test</url>
+    </scm>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>lithium-snapshots</id>
