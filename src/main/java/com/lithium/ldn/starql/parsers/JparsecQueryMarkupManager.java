@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-
 import org.codehaus.jparsec.Parser;
 import org.codehaus.jparsec.Parsers;
 import org.codehaus.jparsec.Scanners;
@@ -33,17 +31,15 @@ import com.lithium.ldn.starql.models.QlPageConstraints;
 import com.lithium.ldn.starql.models.QlSelectStatement;
 import com.lithium.ldn.starql.models.QlSortClause;
 import com.lithium.ldn.starql.models.QlSortOrderType;
-import com.lithium.ldn.starql.parsers.JparsecQlParserTest;
 
 /**
  * JParsec implementation of QueryMarkupManger.
  * 
  * @author David Esposito
- * @testing When making changes to this file, make sure to run {@link JparsecQlParserTest}.
+ * @testing When making changes to this file, make sure to run JparsecQlParserTest.
  */
 public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
-	@Override
 	public QlSelectStatement parseQlSelect(String query) throws InvalidQueryException {
 		try {
 			return qlSelectParser().parse(query);
