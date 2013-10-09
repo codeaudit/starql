@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 /**
  * A String value of a boolean constraint in the WHERE clause of a StarQL SELECT Statement.
+ * Default date format. Implements ISO8601
  * 
  * @author David Esposito
  */

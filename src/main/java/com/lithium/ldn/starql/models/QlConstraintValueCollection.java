@@ -13,7 +13,7 @@ import com.google.common.collect.Lists;
  * @author Jake Scheps
  * @author David Esposito
  */
-public class QlConstraintValueCollection<TypeT extends QlConstraintValue> extends QlConstraintValue implements Iterable<TypeT> {
+public final class QlConstraintValueCollection<TypeT extends QlConstraintValue> extends QlConstraintValue implements Iterable<TypeT> {
 
 	private final List<TypeT> value;
 

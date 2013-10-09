@@ -6,7 +6,7 @@ package com.lithium.ldn.starql.models;
  * @author Jake Scheps
  * @author David Esposito
  */
-public class QlConstraintValueString extends QlConstraintValue {
+public final class QlConstraintValueString extends QlConstraintValue {
 	
 	private final String value;
 	

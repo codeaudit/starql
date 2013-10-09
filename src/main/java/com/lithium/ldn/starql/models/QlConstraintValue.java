@@ -18,7 +18,7 @@ public abstract class QlConstraintValue {
 	 * otherwise.
 	 */
 	public boolean isA(Class<? extends QlConstraintValue> constraintValueClass) {
-		return this.getClass().equals(constraintValueClass);
+		return constraintValueClass.isAssignableFrom(this.getClass());
 	}
 
 	/**
