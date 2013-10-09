@@ -1,10 +1,9 @@
 package com.lithium.ldn.starql.models;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 /**
  * A collection of {@link QlConstraintValue} for a boolean constraint in the WHERE clause of 
@@ -15,14 +14,14 @@ import com.google.common.collect.Lists;
  */
 public final class QlConstraintValueCollection<TypeT extends QlConstraintValue> extends QlConstraintValue implements Iterable<TypeT> {
 
-	private final List<TypeT> value;
+	private final ImmutableList<TypeT> value;
 
 	public QlConstraintValueCollection(TypeT... values) {
-		this.value = Collections.unmodifiableList(Lists.newArrayList(values));
+		this.value = ImmutableList.copyOf(values);
 	}
 	
 	public QlConstraintValueCollection(List<TypeT> value) {
-		this.value = Collections.unmodifiableList(Lists.newArrayList(value));
+		this.value = ImmutableList.copyOf(value);
 	}
 	
 	public List<TypeT> getValue() {
