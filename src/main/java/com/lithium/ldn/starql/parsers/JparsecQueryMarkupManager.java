@@ -204,7 +204,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlConstraintOperator> constraintOperatorParser() {
-		return paddedRegex("(!=|=|<=|>=|<|>|IN)", false, false)
+		return paddedRegex("(!=|=|<=|>=|<|>|IN|MATCHES|LIKE)", false, false)
 				.map(new Map<String, QlConstraintOperator>() {
 					@Override
 					public QlConstraintOperator map(String arg0) {
