@@ -25,7 +25,7 @@ public final class QlConstraintValueString extends QlConstraintValue {
 	
 	@Override
 	public String toString() {
-		return value != null ? value.toString() : null;
+		return value != null ? value.toString() : "null";
 	}
 
 	@Override
