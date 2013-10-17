@@ -21,6 +21,8 @@ import static com.lithium.ldn.starql.models.QlConstraintOperator.IN;
 import static com.lithium.ldn.starql.models.QlConstraintOperator.LESS_THAN;
 import static com.lithium.ldn.starql.models.QlConstraintOperator.LESS_THAN_EQUAL;
 import static com.lithium.ldn.starql.models.QlConstraintOperator.NOT_EQUALS;
+import static com.lithium.ldn.starql.models.QlConstraintOperator.MATCHES;
+import static com.lithium.ldn.starql.models.QlConstraintOperator.LIKE;
 import static com.lithium.ldn.starql.models.QlConstraintPairOperator.AND;
 import static com.lithium.ldn.starql.models.QlConstraintPairOperator.OR;
 import static com.lithium.ldn.starql.models.QlSortOrderType.ASC;
@@ -504,7 +506,17 @@ public class JparsecQlParserTest extends TestCase {
 		assertNotNull(dateVar);
 		assertEquals(dateString, dateVar.getValueString());
 	}
-	
+
+	public final void test_variable19() {
+		String var = "0";
+		Assert.assertEquals(0, inst.constraintValueParser().parse(var).asA(QlConstraintValueNumber.class).getValue());
+	}
+
+	public final void test_variable20() {
+		String var = "0L";
+		Assert.assertEquals(0L, inst.constraintValueParser().parse(var).asA(QlConstraintValueNumber.class).getValue());
+	}
+
 	private final QlConstraintValueCollection<QlConstraintValue> getConstraintValueCollection(String...values) {
 		List<QlConstraintValue> vals = Lists.newArrayList();
 		for (String value : values) {
@@ -569,6 +581,14 @@ public class JparsecQlParserTest extends TestCase {
 	
 	public final void test_constraint8() {
 		runConstraintTest("age>25000000000000L", getNumberConstraint(new QlField("age"), Long.parseLong("25000000000000"), GREATER_THAN));
+	}
+	
+	public final void test_constraint9() {
+		runConstraintTest("body MATCHES 'asdf'", getStringConstraint(new QlField("body"), "asdf", MATCHES));
+	}
+	
+	public final void test_constraint10() {
+		runConstraintTest("body LIKE ('asdf', 'fdsa')", getStringCollectionConstraint(new QlField("body"), LIKE, "asdf", "fdsa"));
 	}
 	
 	//Use this one for recursive ql fields.

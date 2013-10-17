@@ -225,7 +225,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlConstraintOperator> constraintOperatorParser() {
-		return paddedRegex("(!=|=|<=|>=|<|>|IN)", false, false)
+		return paddedRegex("(!=|=|<=|>=|<|>|IN|MATCHES|LIKE)", false, false)
 				.map(new Map<String, QlConstraintOperator>() {
 					@Override
 					public QlConstraintOperator map(String arg0) {
@@ -378,7 +378,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * @return The matched string
 	 */
 	protected Parser<QlConstraintValueNumber> numericalValueParser() {
-		return regex("([0-9]+\\.[0-9]+f?|[1-9][0-9]*L?)", false)
+		return regex("([0-9]+\\.[0-9]+f?|[1-9][0-9]*L?|0L?)", false)
 				.map(new Map<String, QlConstraintValueNumber>(){
 					@Override
 					public QlConstraintValueNumber map(String arg0) {

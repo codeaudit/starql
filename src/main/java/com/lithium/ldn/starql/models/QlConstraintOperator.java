@@ -30,6 +30,10 @@ public enum QlConstraintOperator {
 	@SuppressWarnings("unchecked")
 	IN("IN", getSet(QlConstraintValueCollection.class)),
 	@SuppressWarnings("unchecked")
+	MATCHES("MATCHES", getSet(QlConstraintValueString.class)),
+	@SuppressWarnings("unchecked")
+	LIKE("LIKE", getSet(QlConstraintValueString.class, QlConstraintValueCollection.class)),
+	@SuppressWarnings("unchecked")
 	UNKNOWN("UNKNOWN", getSet());
 	
 	public static final QlConstraintOperator STATIC_ACCESS = UNKNOWN;
@@ -43,6 +47,8 @@ public enum QlConstraintOperator {
 		temp.put(GREATER_THAN_EQUAL.getName(), GREATER_THAN_EQUAL);
 		temp.put(LESS_THAN_EQUAL.getName(), LESS_THAN_EQUAL);
 		temp.put(IN.getName(), IN);
+		temp.put(MATCHES.getName(), MATCHES);
+		temp.put(LIKE.getName(), LIKE);
 		map = Collections.unmodifiableMap(temp);
 	}
 	
