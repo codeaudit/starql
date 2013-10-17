@@ -505,7 +505,17 @@ public class JparsecQlParserTest extends TestCase {
 		assertNotNull(dateVar);
 		assertEquals(dateString, dateVar.getValueString());
 	}
-	
+
+	public final void test_variable19() {
+		String var = "0";
+		Assert.assertEquals(0, inst.constraintValueParser().parse(var).asA(QlConstraintValueNumber.class).getValue());
+	}
+
+	public final void test_variable20() {
+		String var = "0L";
+		Assert.assertEquals(0L, inst.constraintValueParser().parse(var).asA(QlConstraintValueNumber.class).getValue());
+	}
+
 	private final QlConstraintValueCollection<QlConstraintValue> getConstraintValueCollection(String...values) {
 		List<QlConstraintValue> vals = Lists.newArrayList();
 		for (String value : values) {
