@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 
 import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.exceptions.InvalidQueryException;
+import com.lithium.ldn.starql.exceptions.QueryValidationException;
 import com.lithium.ldn.starql.models.QlBooleanConstraintNode;
 import com.lithium.ldn.starql.models.QlField;
 import com.lithium.ldn.starql.models.QlPageConstraints;
@@ -39,7 +40,7 @@ public class QlParserTest extends TestCase {
 	private final QueryMarkupManager queryMarkupManager = new JparsecQueryMarkupManager();
 	private final QlPageConstraints defaultPageConstraints = new QlPageConstraints(-1, -1);
 	
-	public final void test_QlParser_Simple1() throws InvalidQueryException {
+	public final void test_QlParser_Simple1() throws InvalidQueryException, QueryValidationException {
 		String query = "SELECT * FROM messages";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("*"));
@@ -55,7 +56,7 @@ public class QlParserTest extends TestCase {
 		assertEquals(query, expected.toString(), actual.toString());
 	}
 	
-	public final void test_QlParser_Simple2() throws InvalidQueryException {
+	public final void test_QlParser_Simple2() throws InvalidQueryException, QueryValidationException {
 		String query = "SELECT id FROM messages";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("id"));
@@ -71,7 +72,7 @@ public class QlParserTest extends TestCase {
 		assertEquals(query, expected.toString(), actual.toString());
 	}
 	
-	public final void test_QlParser_Simple3() throws InvalidQueryException {
+	public final void test_QlParser_Simple3() throws InvalidQueryException, QueryValidationException {
 		String query = "SELECT id,author,board FROM messages";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("id"),
@@ -95,6 +96,8 @@ public class QlParserTest extends TestCase {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
 			return;
+		} catch (QueryValidationException e) {
+			e.printStackTrace();
 		}
 		fail("Expected Invalid Query Exception: " + query);
 	}
@@ -105,6 +108,8 @@ public class QlParserTest extends TestCase {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
 			return;
+		} catch (QueryValidationException e) {
+			e.printStackTrace();
 		}
 		fail("Expected Invalid Query Exception: " + query);
 	}
@@ -115,11 +120,13 @@ public class QlParserTest extends TestCase {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
 			return;
+		} catch (QueryValidationException e) {
+			e.printStackTrace();
 		}
 		fail("Expected Invalid Query Exception: " + query);
 	}
 	
-	public final void test_QlParser_Sorted1() throws InvalidQueryException {
+	public final void test_QlParser_Sorted1() throws InvalidQueryException, QueryValidationException {
 		String query = "SELECT * FROM messages ORDER BY date ASC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("*"));
@@ -135,7 +142,7 @@ public class QlParserTest extends TestCase {
 		assertEquals(query, expected.toString(), actual.toString());
 	}
 	
-	public final void test_QlParser_Sorted2() throws InvalidQueryException {
+	public final void test_QlParser_Sorted2() throws InvalidQueryException, QueryValidationException {
 		String query = "SELECT id FROM messages ORDER BY date DESC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("id"));
@@ -151,7 +158,7 @@ public class QlParserTest extends TestCase {
 		assertEquals(query, expected.toString(), actual.toString());
 	}
 	
-	public final void test_QlParser_Sorted3() throws InvalidQueryException {
+	public final void test_QlParser_Sorted3() throws InvalidQueryException, QueryValidationException {
 		String query = "SELECT id,author,board FROM messages ORDER BY date ASC";
 		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
 		List<QlField> fields = Lists.newArrayList(new QlField("id"),
@@ -175,6 +182,8 @@ public class QlParserTest extends TestCase {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
 			return;
+		} catch (QueryValidationException e) {
+			e.printStackTrace();
 		}
 		fail("Expected Invalid Query Exception: " + query);
 	}
@@ -185,6 +194,8 @@ public class QlParserTest extends TestCase {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
 			return;
+		} catch (QueryValidationException e) {
+			e.printStackTrace();
 		}
 		fail("Expected Invalid Query Exception: " + query);
 	}
@@ -195,6 +206,8 @@ public class QlParserTest extends TestCase {
 			queryMarkupManager.parseQlSelect(query);
 		} catch (InvalidQueryException e) {
 			return;
+		} catch (QueryValidationException e) {
+			e.printStackTrace();
 		}
 		fail("Expected Invalid Query Exception: " + query);
 	}

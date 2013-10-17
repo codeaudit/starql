@@ -37,6 +37,7 @@ import org.junit.Assert;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.exceptions.InvalidQueryException;
+import com.lithium.ldn.starql.exceptions.QueryValidationException;
 import com.lithium.ldn.starql.models.QlBooleanConstraintNode;
 import com.lithium.ldn.starql.models.QlConstraint;
 import com.lithium.ldn.starql.models.QlConstraintOperator;
@@ -736,6 +737,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -756,6 +759,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -789,6 +794,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -815,6 +822,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -835,6 +844,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -862,6 +873,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -882,6 +895,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -904,6 +919,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -924,6 +941,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -951,6 +970,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -974,6 +995,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -1003,7 +1026,8 @@ public class JparsecQlParserTest extends TestCase {
 			QlSelectStatement parseQlSelect = inst.parseQlSelect(query);
 			Assert.assertEquals(expected, parseQlSelect);
 		} catch (InvalidQueryException e) {
-			e.printStackTrace();
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -1034,7 +1058,8 @@ public class JparsecQlParserTest extends TestCase {
 			QlSelectStatement parseQlSelect = inst.parseQlSelect(query);
 			Assert.assertEquals(expected, parseQlSelect);
 		} catch (InvalidQueryException e) {
-			e.printStackTrace();
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -1057,6 +1082,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -1083,6 +1110,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -1106,6 +1135,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -1134,6 +1165,8 @@ public class JparsecQlParserTest extends TestCase {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 	
@@ -1160,6 +1193,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -1188,6 +1223,8 @@ public class JparsecQlParserTest extends TestCase {
 		try {
 			Assert.assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
+			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
+		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}

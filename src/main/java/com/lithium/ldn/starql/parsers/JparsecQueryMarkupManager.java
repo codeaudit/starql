@@ -19,6 +19,7 @@ import org.codehaus.jparsec.pattern.Patterns;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.exceptions.InvalidQueryException;
+import com.lithium.ldn.starql.exceptions.QueryValidationException;
 import com.lithium.ldn.starql.models.QlBooleanConstraintNode;
 import com.lithium.ldn.starql.models.QlConstraint;
 import com.lithium.ldn.starql.models.QlConstraintOperator;
@@ -33,6 +34,8 @@ import com.lithium.ldn.starql.models.QlPageConstraints;
 import com.lithium.ldn.starql.models.QlSelectStatement;
 import com.lithium.ldn.starql.models.QlSortClause;
 import com.lithium.ldn.starql.models.QlSortOrderType;
+import com.lithium.ldn.starql.validation.NoOpValidator;
+import com.lithium.ldn.starql.validation.QlSelectStatementValidator;
 
 /**
  * JParsec implementation of QueryMarkupManger.
@@ -42,9 +45,27 @@ import com.lithium.ldn.starql.models.QlSortOrderType;
  */
 public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
-	public QlSelectStatement parseQlSelect(String query) throws InvalidQueryException {
+	private static final NoOpValidator NO_OP_VALIDATOR = new NoOpValidator();
+	
+	@Override
+	public QlSelectStatement parseQlSelect(String query) throws InvalidQueryException, 
+			QueryValidationException {
+		return parseQlSelect(query, NO_OP_VALIDATOR);
+	}
+
+	@Override
+	public QlSelectStatement parseQlSelect(String query, QlSelectStatementValidator validator) 
+			throws InvalidQueryException, QueryValidationException {
+		if (query == null) {
+			throw new IllegalArgumentException("query cannot be null");
+		}
+		if (validator == null) {
+			throw new IllegalArgumentException("validator cannot be null");
+		}
 		try {
-			return qlSelectParser().parse(query);
+			QlSelectStatement selectStatement = qlSelectParser().parse(query);
+			validator.validate(selectStatement);
+			return selectStatement;
 		} catch (ParserException e) {
 			throw new InvalidQueryException(e.getMessage(), query);
 		}
