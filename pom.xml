@@ -9,7 +9,7 @@
 
 	<groupId>com.lithium</groupId>
 	<artifactId>dev-ldn-starql</artifactId>
-	<version>0.3.3</version>
+	<version>0.3.4-SNAPSHOT</version>
 	<name>dev-ldn-starql</name>
 	<description>Generic version of LiQL</description>
 
@@ -60,7 +60,7 @@
 		<connection>scm:git:git@github.com:lithiumtech/starql.git</connection>
 		<developerConnection>scm:git:git@github.com:lithiumtech/starql.git</developerConnection>
 		<url>https://github.com/lithiumtech/starql</url>
-		<tag>dev-ldn-starql-0.3.3</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<distributionManagement>
 		<snapshotRepository>
