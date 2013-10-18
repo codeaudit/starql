@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.lithium</groupId>
 	<artifactId>dev-ldn-starql</artifactId>
-	<version>0.3.2-SNAPSHOT</version>
+	<version>0.3.3-SNAPSHOT</version>
 	<name>dev-ldn-starql</name>
 	<description>Generic version of LiQL</description>
 
@@ -29,12 +29,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<optional>true</optional>
-			<exclusions>
-				<exclusion>
-					<artifactId>hamcrest-core</artifactId>
-					<groupId>org.hamcrest</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
