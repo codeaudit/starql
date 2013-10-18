@@ -349,22 +349,22 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	/**
 	 * Supports 
-	 *   - int: [1-9][0-9]*
-	 *   - long: [1-9][0-9]*L
+	 *   - int: [1-9][0-9]*, 0
+	 *   - long: [1-9][0-9]*L, 0L
 	 *   - double: [0-9]+\.[0-9]+
-	 *   - float: [0-9]+\.[0-9]+f
+	 *   - float: [0-9]+\.[0-9]+f, 0f
 	 * 
 	 * @return The matched string
 	 */
 	protected Parser<QlConstraintValueNumber> numericalValueParser() {
-		return regex("([0-9]+\\.[0-9]+f?|[1-9][0-9]*L?|0L?)", false)
+		return regex("([0-9]+\\.[0-9]+f?|[1-9][0-9]*L?|0[fL]?)", false)
 				.map(new Map<String, QlConstraintValueNumber>(){
 					@Override
 					public QlConstraintValueNumber map(String arg0) {
+						if (arg0.contains("f")) {
+							return new QlConstraintValueNumber(Float.parseFloat(arg0));
+						}
 						if (arg0.contains(".")) {
-							if (arg0.contains("f")) {
-								return new QlConstraintValueNumber(Float.parseFloat(arg0));
-							}
 							return new QlConstraintValueNumber(Double.parseDouble(arg0));
 						}
 						if (arg0.contains("L")) {
