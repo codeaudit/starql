@@ -1,6 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>com.lithium</groupId>
+		<artifactId>lithium-oss-superpom</artifactId>
+		<version>0.8</version>
+	</parent>
+
 	<groupId>com.lithium</groupId>
 	<artifactId>dev-ldn-starql</artifactId>
 	<version>0.3.3-SNAPSHOT</version>
@@ -51,10 +58,11 @@
 		</extensions>
 	</build>
 	<scm>
-        <connection>scm:svn:svn+ssh://svn.dev.lithium.com/home/svn/trunk/tools/maven_release_test</connection>
-        <developerConnection>scm:svn:svn+ssh://svn.dev.lithium.com/home/svn/trunk/tools/maven_release_test</developerConnection>
-        <url>scm:svn:svn+ssh://svn.dev.lithium.com/home/svn/trunk/tools/maven_release_test</url>
-    </scm>
+		<connection>scm:git:git@github.com:lithiumtech/starql.git</connection>
+		<developerConnection>scm:git:git@github.com:lithiumtech/starql.git</developerConnection>
+		<url>https://github.com/lithiumtech/starql</url>
+		<tag>HEAD</tag>
+	</scm>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>lithium-snapshots</id>
