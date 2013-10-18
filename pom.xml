@@ -10,7 +10,7 @@
 
 	<groupId>com.lithium</groupId>
 	<artifactId>dev-ldn-starql</artifactId>
-	<version>0.3.3-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>dev-ldn-starql</name>
 	<description>Generic version of LiQL</description>
 
