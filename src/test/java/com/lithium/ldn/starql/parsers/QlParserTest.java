@@ -25,6 +25,11 @@ import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.exceptions.InvalidQueryException;
 import com.lithium.ldn.starql.exceptions.QueryValidationException;
 import com.lithium.ldn.starql.models.QlBooleanConstraintNode;
+import com.lithium.ldn.starql.models.QlConstraint;
+import com.lithium.ldn.starql.models.QlConstraintOperator;
+import com.lithium.ldn.starql.models.QlConstraintPair;
+import com.lithium.ldn.starql.models.QlConstraintPairOperator;
+import com.lithium.ldn.starql.models.QlConstraintValueString;
 import com.lithium.ldn.starql.models.QlField;
 import com.lithium.ldn.starql.models.QlPageConstraints;
 import com.lithium.ldn.starql.models.QlSelectStatement;
@@ -79,6 +84,27 @@ public class QlParserTest extends TestCase {
 				new QlField("author"),
 				new QlField("board"));
 		QlBooleanConstraintNode constraints = null;
+		QlSortClause sortClause = null;
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(fields)
+				.setCollection("messages")
+				.setConstraints(constraints)
+				.setSortConstraint(sortClause)
+				.setPageConstraints(defaultPageConstraints)
+				.build();
+		assertEquals(query, expected.toString(), actual.toString());
+	}
+	
+	public final void test_QlParser_WhereMatches() throws InvalidQueryException, QueryValidationException {
+		String query = "SELECT * FROM messages WHERE body MATCHES 'asdf' AND subject LIKE 'fdsa'";
+		QlSelectStatement actual = queryMarkupManager.parseQlSelect(query);
+		List<QlField> fields = Lists.newArrayList(new QlField("*"));
+		QlBooleanConstraintNode matchesConstraint = new QlConstraint(new QlField("body"),
+				new QlConstraintValueString("asdf"), QlConstraintOperator.MATCHES);
+		QlBooleanConstraintNode likeConstraint = new QlConstraint(new QlField("subject"),
+				new QlConstraintValueString("fdsa"), QlConstraintOperator.LIKE);
+		QlBooleanConstraintNode constraints = new QlConstraintPair(matchesConstraint, likeConstraint,
+				QlConstraintPairOperator.AND);
 		QlSortClause sortClause = null;
 		QlSelectStatement expected = new QlSelectStatement.Builder()
 				.setFields(fields)

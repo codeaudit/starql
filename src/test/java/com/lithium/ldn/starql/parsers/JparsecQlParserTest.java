@@ -362,6 +362,26 @@ public class JparsecQlParserTest {
 	public final void test_constraintOperator8() {
 		assertEquals(IN, inst.constraintOperatorParser().parse("in"));
 	}
+	
+	@Test
+	public final void test_constraintOperator9() {
+		assertEquals(MATCHES, inst.constraintOperatorParser().parse("MATCHES"));
+	}
+	
+	@Test
+	public final void test_constraintOperator10() {
+		assertEquals(MATCHES, inst.constraintOperatorParser().parse("matches"));
+	}
+	
+	@Test
+	public final void test_constraintOperator11() {
+		assertEquals(LIKE, inst.constraintOperatorParser().parse("LIKE"));
+	}
+	
+	@Test
+	public final void test_constraintOperator12() {
+		assertEquals(LIKE, inst.constraintOperatorParser().parse("like"));
+	}
 
 	/*
 	 * ===================================================
@@ -650,9 +670,14 @@ public class JparsecQlParserTest {
 	public final void test_constraint9() {
 		runConstraintTest("body MATCHES 'asdf'", getStringConstraint(new QlField("body"), "asdf", MATCHES));
 	}
-
+	
 	@Test
 	public final void test_constraint10() {
+		runConstraintTest("body LIKE 'fdsa'", getStringConstraint(new QlField("body"), "fdsa", LIKE));
+	}
+
+	@Test
+	public final void test_constraint11() {
 		runConstraintTest("body LIKE ('asdf', 'fdsa')", getStringCollectionConstraint(new QlField("body"), LIKE, "asdf", "fdsa"));
 	}
 	
