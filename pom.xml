@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>dev-ldn-starql</artifactId>
-	<version>1.2</version>
+	<version>1.3-SNAPSHOT</version>
 	<name>dev-ldn-starql</name>
 	<description>Generic version of LiQL</description>
 
@@ -45,6 +45,6 @@
 	<scm>
 		<developerConnection>scm:git:git@github.com:lithiumtech/starql.git</developerConnection>
 		<url>https://github.com/lithiumtech/starql</url>
-		<tag>dev-ldn-starql-1.2</tag>
+		<tag>HEAD</tag>
 	</scm>
 </project>
