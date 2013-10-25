@@ -19,6 +19,7 @@ public class QlField {
 	private final String qualifiedName;
 	private final QlField subObject;
 	private final boolean isStar;
+	private final boolean isFunction;
 
 	/**
 	 * Get the name of the current field. Parent and sub fields are not included in the string.
@@ -50,25 +51,32 @@ public class QlField {
 	public final QlField getSubObject() {
 		return subObject;
 	}
-
-	public QlField(String name, String...subObjectNames) {
-		this(name, 0, subObjectNames);
+	
+	public static final QlField create(String name) {
+		return new QlField(name, null, false);
+	}
+	
+	public static final QlField create(String name, QlField subObject, boolean isFunction) {
+		return new QlField(name, subObject, isFunction);
 	}
 
-	private QlField(String name, int index, String...subObjectNames) {
+	private QlField(String name, QlField subObject, boolean isFunction) {
 		this.name = name;
 		this.isStar = name.equals("*");
-		this.subObject = index < subObjectNames.length
-				? new QlField(subObjectNames[index], index+1, subObjectNames)
-				: null;
-		this.qualifiedName = hasSubObject()
-						? name + "." + subObject.getQualifiedName()
-						: name;
+		this.subObject = subObject;
+		this.isFunction = isFunction;
+		if (isFunction) {
+			this.qualifiedName = name + "(" + subObject.getQualifiedName()
+					+ ")";
+		} else {
+			this.qualifiedName = hasSubObject() ? name + "."
+					+ subObject.getQualifiedName() : name;
+		}
 	}
 
 	@Override
 	public String toString() {
-		return "QlField [name=" + name + ", subObject=" + subObject + ", isStar=" + isStar + "]";
+		return "QlField [name=" + name + ", subObject=" + subObject + ", isStar=" + isStar + ", isFunction=" + isFunction + "]";
 	}
 
 	@Override
@@ -86,8 +94,8 @@ public class QlField {
 		public List<QlField> getFields() {
 			return fields;
 		}
-		public CollectionBuilder add(String name, String...subFieldNames) {
-			return add(new QlField(name, subFieldNames));
+		public CollectionBuilder add(String name, QlField subObject, boolean isFunction) {
+			return add(new QlField(name, subObject, isFunction));
 		}
 		public CollectionBuilder add(QlField field) {
 			fields.add(field);

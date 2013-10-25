@@ -109,22 +109,57 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<List<QlField>> fieldCollectionParser() {
-		return fieldParser().sepBy1(padWithWhitespace(regex(",", true), false));
+		return fieldOrFunctionParser().sepBy1(padWithWhitespace(regex(",", true), false));
 	}
 	
-	protected Parser<QlField> fieldParser() {
-		return alphaNumeric().sepBy1(regex("\\.", true))
-				.map(new Map<List<String>, QlField>() {
+	protected Parser<QlField> fieldOrFunctionParser() {
+		Parser.Reference<QlField> fieldOrFuncParserRef = Parser.newReference();
+		Parser<QlField> fieldOrFuncParser = 				
+				Parsers.or(functionParser(fieldOrFuncParserRef), fieldParser(fieldOrFuncParserRef), simpleFieldParser()).map(
+				new Map<Tuple3<String, QlField, Boolean>, QlField>() {
 					@Override
-					public QlField map(List<String> fieldNames) {
-						if (fieldNames.size() == 0) {
-							return null;
-						}
-						String[] names = new String[fieldNames.size()-1];
-						for (int i=1;i<fieldNames.size();i++) {
-							names[i-1] = fieldNames.get(i);
-						}
-						return new QlField(fieldNames.get(0), names);
+					public QlField map(
+							Tuple3<String, QlField, Boolean> fieldInfo) {
+						return QlField.create(fieldInfo.a, fieldInfo.b,
+								fieldInfo.c);
+					}
+				});
+		fieldOrFuncParserRef.lazySet(fieldOrFuncParser);
+		return fieldOrFuncParser;
+	}
+	
+	protected Parser<Tuple3<String,QlField,Boolean>> functionParser(Parser.Reference<QlField> fieldOrFuncParserRef) {
+		return Parsers.tuple(alphaNumeric().followedBy(padWithWhitespace(regex("\\(", true), false)),
+							insideFunctionParser(fieldOrFuncParserRef),
+							Parsers.constant(true));
+	}
+	
+	protected Parser<QlField> insideFunctionParser(Parser.Reference<QlField> fieldOrFuncParserRef) {
+		return Parsers.or(fieldSingleStarParser(), fieldOrFuncParserRef.lazy()).followedBy(
+				padWithWhitespace(regex("\\)", true), true));
+	}
+	
+	protected Parser<Tuple3<String, QlField, Boolean>> fieldParser(
+			Parser.Reference<QlField> fieldOrFuncParserRef) {
+		return Parsers.tuple(
+				alphaNumeric().followedBy(padWithWhitespace(regex("\\.", true), false)), 
+				fieldOrFuncParserRef.lazy(), 
+				Parsers.constant(false));
+
+	}
+	
+	protected Parser<Tuple3<String,QlField,Boolean>> simpleFieldParser() {
+		return Parsers.tuple(alphaNumeric(),
+				Parsers.constant((QlField)null),
+				Parsers.constant(false));
+	}
+	
+	protected Parser<QlField> fieldSingleStarParser() {
+		return paddedRegex("\\*", true, true)
+				.map(new Map<String, QlField>() {
+					@Override
+					public QlField map(String arg0) {
+						return QlField.create(arg0);
 					}
 				});
 	}
@@ -134,7 +169,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				.map(new Map<String, List<QlField>>() {
 					@Override
 					public List<QlField> map(String arg0) {
-						return Lists.newArrayList(new QlField(arg0));
+						return Lists.newArrayList(QlField.create(arg0));
 					}
 				});
 	}
@@ -146,7 +181,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 */
 	protected Parser<QlSortClause> orderByParser() {
 		return paddedRegex("ORDER BY", false, false)
-				.next(Parsers.tuple(fieldParser(), sortOrderTypeParser()))
+				.next(Parsers.tuple(fieldOrFunctionParser(), sortOrderTypeParser()))
 				.map(new Map<Pair<QlField, QlSortOrderType>, QlSortClause>() {
 						@Override
 						public QlSortClause map(Pair<QlField, QlSortOrderType> arg0) {
@@ -214,7 +249,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlBooleanConstraintNode> constraintParser() {
-		return Parsers.tuple(padWithWhitespace(fieldParser(), false), constraintOperatorParser(), 
+		return Parsers.tuple(padWithWhitespace(fieldOrFunctionParser(), false), constraintOperatorParser(), 
 				constraintValueParser())
 				.map(new Map<Tuple3<QlField, QlConstraintOperator, QlConstraintValue>, QlBooleanConstraintNode>() {
 					@Override
