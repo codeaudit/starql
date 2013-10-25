@@ -382,20 +382,24 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				.map(new Map<String, QlConstraintValueNumber>(){
 					@Override
 					public QlConstraintValueNumber map(String arg0) {
-						if (arg0.contains("f")) {
-							return new QlConstraintValueNumber(Float.parseFloat(arg0));
-						}
-						if (arg0.contains(".")) {
-							return new QlConstraintValueNumber(Double.parseDouble(arg0));
-						}
-						if (arg0.contains("L")) {
-							return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length()-1)));
-						}
 						try {
-							return new QlConstraintValueNumber(Integer.parseInt(arg0));
-						}
-						catch(NumberFormatException e) {
-							return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length())));
+							if (arg0.contains("f")) {
+								return new QlConstraintValueNumber(Float.parseFloat(arg0));
+							}
+							if (arg0.contains(".")) {
+								return new QlConstraintValueNumber(Double.parseDouble(arg0));
+							}
+							if (arg0.contains("L")) {
+								return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length()-1)));
+							}
+							try {
+								return new QlConstraintValueNumber(Integer.parseInt(arg0));
+							}
+							catch(NumberFormatException e) {
+								return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length())));
+							}
+						} catch (NumberFormatException e) {
+							throw new RuntimeException("Could not convert the following string to a nubmer: " + arg0);
 						}
 					}
 				});
