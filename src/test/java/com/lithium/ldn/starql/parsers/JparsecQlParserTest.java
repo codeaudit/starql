@@ -104,12 +104,12 @@ public class JparsecQlParserTest {
 	 * 		FIELD
 	 * ===================================================
 	 */
-	@Test(expected = ParserException.class)
-	public final void test_field() {
-			String word = "";
-			inst.fieldParser().parse(word);
-			Assert.fail("Field cannot be blank");
-	}
+//	@Test(expected = ParserException.class)
+//	public final void test_field() {
+//			String word = "";
+//			inst.fieldParser().parse(word);
+//			Assert.fail("Field cannot be blank");
+//	}
 
 	@Test
 	public final void test_field1() {
@@ -132,7 +132,7 @@ public class JparsecQlParserTest {
 	}
 
 	private final void runFieldTest(String word, String name, boolean isStar) {
-		QlField qlField = inst.fieldParser().parse(word);
+		QlField qlField = inst.fieldOrFunctionParser().parse(word);
 		assertNotNull(qlField);
 		assertEquals(word, qlField.getQualifiedName());
 		assertEquals(name, qlField.getName());
@@ -261,7 +261,7 @@ public class JparsecQlParserTest {
 	}
 	
 	private QlSortClause getSortClause(String field, QlSortOrderType order) {
-		return new QlSortClause(new QlField(field), order);
+		return new QlSortClause(QlField.create(field), order);
 	}
 	
 	private final void runSortOrderTest(String query, QlSortClause expected) {
@@ -623,62 +623,62 @@ public class JparsecQlParserTest {
 
 	@Test
 	public final void test_constraint1() {
-		runConstraintTest("name = 'david'", getStringConstraint(new QlField("name"), "david", EQUALS));
+		runConstraintTest("name = 'david'", getStringConstraint(QlField.create("name"), "david", EQUALS));
 	}
 
 	@Test
 	public final void test_constraint2() {
 		runConstraintTest("email!='david.esposito@lithium.com'", 
-				getStringConstraint(new QlField("email"), "david.esposito@lithium.com", NOT_EQUALS));
+				getStringConstraint(QlField.create("email"), "david.esposito@lithium.com", NOT_EQUALS));
 	}
 
 	@Test
 	public final void test_constraint3() {
-		runConstraintTest("age>25", getNumberConstraint(new QlField("age"), 25, GREATER_THAN));
+		runConstraintTest("age>25", getNumberConstraint(QlField.create("age"), 25, GREATER_THAN));
 	}
 
 	@Test
 	public final void test_constraint4() {
 		runConstraintTest("average<=2.7182818f", 
-				getNumberConstraint(new QlField("average"), new Float(2.7182818), LESS_THAN_EQUAL));
+				getNumberConstraint(QlField.create("average"), new Float(2.7182818), LESS_THAN_EQUAL));
 	}
 
 	@Test
 	public final void test_constraint5() {
 		runConstraintTest("board.id IN ('a','b','c')",
-				getStringCollectionConstraint(new QlField("board", "id"), IN, "a", "b", "c"));
+				getStringCollectionConstraint(QlField.create("board", QlField.create("id"), false), IN, "a", "b", "c"));
 	}
 
 	@Test
 	public final void test_constraint6() {
 		runConstraintTest("user.uid IN (1,2,3)",
-				getNumberCollectionConstraint(new QlField("user", "uid"), IN, 1, 2, 3));
+				getNumberCollectionConstraint(QlField.create("user", QlField.create("uid"), false), IN, 1, 2, 3));
 	}
 
 	@Test
 	public final void test_constraint7() {
 		runConstraintTest("subject IN ()",
-				getCollectionConstraint(new QlField("subject"), IN));
+				getCollectionConstraint(QlField.create("subject"), IN));
 	}
 
 	@Test
 	public final void test_constraint8() {
-		runConstraintTest("age>25000000000000L", getNumberConstraint(new QlField("age"), Long.parseLong("25000000000000"), GREATER_THAN));
+		runConstraintTest("age>25000000000000L", getNumberConstraint(QlField.create("age"), Long.parseLong("25000000000000"), GREATER_THAN));
 	}
 
 	@Test
 	public final void test_constraint9() {
-		runConstraintTest("body MATCHES 'asdf'", getStringConstraint(new QlField("body"), "asdf", MATCHES));
+		runConstraintTest("body MATCHES 'asdf'", getStringConstraint(QlField.create("body"), "asdf", MATCHES));
 	}
 	
 	@Test
 	public final void test_constraint10() {
-		runConstraintTest("body LIKE 'fdsa'", getStringConstraint(new QlField("body"), "fdsa", LIKE));
+		runConstraintTest("body LIKE 'fdsa'", getStringConstraint(QlField.create("body"), "fdsa", LIKE));
 	}
 
 	@Test
 	public final void test_constraint11() {
-		runConstraintTest("body LIKE ('asdf', 'fdsa')", getStringCollectionConstraint(new QlField("body"), LIKE, "asdf", "fdsa"));
+		runConstraintTest("body LIKE ('asdf', 'fdsa')", getStringCollectionConstraint(QlField.create("body"), LIKE, "asdf", "fdsa"));
 	}
 	
 	//Use this one for recursive ql fields.
@@ -692,15 +692,15 @@ public class JparsecQlParserTest {
 	}
 	
 	private final QlConstraint getStringConstraint(String key, String value, QlConstraintOperator op) {
-		return new QlConstraint(new QlField(key), new QlConstraintValueString(value), op);
+		return new QlConstraint(QlField.create(key), new QlConstraintValueString(value), op);
 	}
 	
 	private final QlConstraint getNumberConstraint(String key, Number value, QlConstraintOperator op) {
-		return new QlConstraint(new QlField(key), new QlConstraintValueNumber(value), op);
+		return new QlConstraint(QlField.create(key), new QlConstraintValueNumber(value), op);
 	}
 	
 	private final QlConstraint getDateConstraint(String key, Date value, QlConstraintOperator op) {
-		return new QlConstraint(new QlField(key), new QlConstraintValueDate(value), op);
+		return new QlConstraint(QlField.create(key), new QlConstraintValueDate(value), op);
 	}
 	
 	private final QlConstraint getCollectionConstraint(QlField field, QlConstraintOperator op) {
@@ -850,13 +850,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -874,22 +868,16 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 	
 	private List<QlField> getFields(String...fieldNames) {
 		if (fieldNames.length == 0) {
-			return Lists.newArrayList(new QlField("*"));
+			return Lists.newArrayList(QlField.create("*"));
 		}
 		List<QlField> fields = Lists.newArrayList();
 		for (String name : fieldNames) {
-			fields.add(new QlField(name));
+			fields.add(QlField.create(name));
 		}
 		return fields;
 	}
@@ -909,13 +897,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 	
 	/*
@@ -938,13 +920,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -962,13 +938,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	/*
@@ -991,13 +961,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1015,13 +979,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1039,13 +997,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1063,13 +1015,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 	
 	/*
@@ -1092,13 +1038,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1119,13 +1059,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1210,13 +1144,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 	
 	// HERE
@@ -1238,13 +1166,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1265,13 +1187,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1295,13 +1211,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 
 	@Test
@@ -1325,13 +1235,7 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
-		try {
-			assertEquals(expected, inst.parseQlSelect(query));
-		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		}
+		verify(query, expected);
 	}
 	
 	// HERE
@@ -1356,6 +1260,53 @@ public class JparsecQlParserTest {
 				.setSortConstraint(sortConstraint)
 				.setPageConstraints(pageConstraints)
 				.build();
+		verify(query, expected);
+	}
+	
+	@Test
+	public final void test_qlSelectStatement_simpleFunctionInFields() {
+		String query = "SELECT count( * ) FROM messages";
+		QlField field = QlField.create("count", QlField.create("*"), true);
+		String table = "messages";
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+		
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(Lists.newArrayList(field)).setCollection(table).setPageConstraints(pageConstraints)
+				.build();
+		verify(query, expected);
+	}
+	
+	@Test
+	public final void test_qlSelectStatement_objectFunctionInFields() {
+		String query = "SELECT kudos.sum(weight) FROM messages";
+		QlField field = QlField.create("kudos", QlField.create("sum", QlField.create("weight"), true), false);
+		String table = "messages";
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+		
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(Lists.newArrayList(field)).setCollection(table)
+				.setPageConstraints(pageConstraints).build();
+		verify(query, expected);
+	}
+	
+	@Test
+	public final void test_qlSelectStatement_functionInFunctionInFields() {
+		String query = "SELECT sum(kudos.count(*)) FROM messages";
+		QlField star = QlField.create("*");
+		QlField count = QlField.create("count", star, true);
+		QlField kudos = QlField.create("kudos", count, false);
+		QlField field = QlField.create("sum", kudos, true);
+		
+		String table = "messages";
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+		
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(Lists.newArrayList(field)).setCollection(table)
+				.setPageConstraints(pageConstraints).build();
+		verify(query, expected);
+	}
+
+	private void verify(String query, QlSelectStatement expected) {
 		try {
 			assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {

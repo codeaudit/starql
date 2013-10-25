@@ -27,7 +27,7 @@ public class QlSortClause {
 	}
 
 	public QlSortClause(String field, QlSortOrderType sortOrder) {
-		this(new QlField(field), sortOrder);
+		this(QlField.create(field), sortOrder);
 	}
 
 	public QlSortClause(QlField field, QlSortOrderType sortOrder) {
@@ -69,8 +69,8 @@ public class QlSortClause {
 			this.field = field;
 			return this;
 		}
-		public Builder setField(String name, String...subFieldNames) {
-			this.field = new QlField(name, subFieldNames);
+		public Builder setField(String name, QlField subObject, boolean isFunction) {
+			this.field = QlField.create(name, subObject, isFunction);
 			return this;
 		}
 		public QlSortOrderType getOrder() {
