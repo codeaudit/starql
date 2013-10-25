@@ -104,12 +104,12 @@ public class JparsecQlParserTest {
 	 * 		FIELD
 	 * ===================================================
 	 */
-//	@Test(expected = ParserException.class)
-//	public final void test_field() {
-//			String word = "";
-//			inst.fieldParser().parse(word);
-//			Assert.fail("Field cannot be blank");
-//	}
+	@Test(expected = ParserException.class)
+	public final void test_field() {
+			String word = "";
+			inst.fieldOrFunctionParser().parse(word);
+			Assert.fail("Field cannot be blank");
+	}
 
 	@Test
 	public final void test_field1() {
