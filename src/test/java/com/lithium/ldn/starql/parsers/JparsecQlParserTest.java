@@ -1305,6 +1305,48 @@ public class JparsecQlParserTest {
 				.setPageConstraints(pageConstraints).build();
 		verify(query, expected);
 	}
+	
+	@Test
+	public final void test_qlSelectStatement_FunctionInWhere() {
+		String query = "SELECT * FROM messages WHERE kudos.count(*) > 0";
+		QlField star = QlField.create("*");
+		QlField count = QlField.create("count", star, true);
+		QlField kudos = QlField.create("kudos", count, false);
+
+		QlBooleanConstraintNode constraint = new QlConstraint(kudos,
+				new QlConstraintValueNumber(0),
+				QlConstraintOperator.GREATER_THAN);
+		String table = "messages";
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(Lists.newArrayList(star)).setCollection(table)
+				.setPageConstraints(pageConstraints).setConstraints(constraint)
+				.build();
+		verify(query, expected);
+	}
+	
+	@Test
+	public final void test_qlSelectStatement_FunctionInWhereAndOrderBy() {
+		String query = "SELECT * FROM messages WHERE kudos.count(*) > 0 ORDER BY kudos.count(*) DESC";
+		QlField star = QlField.create("*");
+		QlField count = QlField.create("count", star, true);
+		QlField kudos = QlField.create("kudos", count, false);
+
+		QlBooleanConstraintNode constraint = new QlConstraint(kudos,
+				new QlConstraintValueNumber(0),
+				QlConstraintOperator.GREATER_THAN);
+		QlSortClause sortConstraint = new QlSortClause(kudos,
+				QlSortOrderType.DESC);
+		String table = "messages";
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(Lists.newArrayList(star)).setCollection(table)
+				.setPageConstraints(pageConstraints).setConstraints(constraint)
+				.setSortConstraint(sortConstraint).build();
+		verify(query, expected);
+	}
 
 	private void verify(String query, QlSelectStatement expected) {
 		try {
