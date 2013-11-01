@@ -34,7 +34,9 @@ import com.lithium.ldn.starql.models.QlPageConstraints;
 import com.lithium.ldn.starql.models.QlSelectStatement;
 import com.lithium.ldn.starql.models.QlSortClause;
 import com.lithium.ldn.starql.models.QlSortOrderType;
+import com.lithium.ldn.starql.models.QlWhereClause;
 import com.lithium.ldn.starql.validation.NoOpValidator;
+import com.lithium.ldn.starql.validation.QlConstraintsClauseValidator;
 import com.lithium.ldn.starql.validation.QlSelectStatementValidator;
 
 /**
@@ -66,6 +68,36 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 			QlSelectStatement selectStatement = qlSelectParser().parse(query);
 			validator.validate(selectStatement);
 			return selectStatement;
+		} catch (ParserException e) {
+			throw new InvalidQueryException(e.getMessage(), query);
+		}
+	}
+
+	@Override
+	public QlWhereClause parseQlConstraintsClause(String query) throws InvalidQueryException, 
+			QueryValidationException {
+		return parseQlConstraintsClause(query, NO_OP_VALIDATOR);
+	}
+
+	@Override
+	public QlWhereClause parseQlConstraintsClause(String query, QlConstraintsClauseValidator validator) 
+			throws InvalidQueryException, QueryValidationException {
+		if (query == null) {
+			throw new IllegalArgumentException("query cannot be null");
+		}
+		if (validator == null) {
+			throw new IllegalArgumentException("validator cannot be null");
+		}
+		try {
+			QlBooleanConstraintNode constraintsRootNode = constraintsParser().parse(query);
+			if (constraintsRootNode != null) {
+				QlWhereClause clause = new QlWhereClause.Builder()
+						.setRoot(constraintsRootNode)
+						.build();
+				validator.validate(clause);
+				return clause;
+			}
+			throw new InvalidQueryException("", query);
 		} catch (ParserException e) {
 			throw new InvalidQueryException(e.getMessage(), query);
 		}
@@ -109,19 +141,43 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<List<QlField>> fieldCollectionParser() {
-		return fieldOrFunctionParser().sepBy1(padWithWhitespace(regex(",", true), false));
+		return qualifiedFieldOrFunctionParser().sepBy1(padWithWhitespace(regex(",", true), false));
 	}
 	
 	protected Parser<QlField> fieldOrFunctionParser() {
 		Parser.Reference<QlField> fieldOrFuncParserRef = Parser.newReference();
-		Parser<QlField> fieldOrFuncParser = 				
-				Parsers.or(functionParser(fieldOrFuncParserRef), fieldParser(fieldOrFuncParserRef), simpleFieldParser()).map(
+		Parser<Tuple3<String, QlField, Boolean>> simpleParser = simpleFieldParser();
+		Parser<Tuple3<String, QlField, Boolean>> fieldParser = fieldParser(fieldOrFuncParserRef);
+		Parser<QlField> fieldOrFuncParser = 
+				Parsers.or(functionParser(fieldOrFuncParserRef), fieldParser, 
+						simpleParser).map(
 				new Map<Tuple3<String, QlField, Boolean>, QlField>() {
 					@Override
-					public QlField map(
-							Tuple3<String, QlField, Boolean> fieldInfo) {
-						return QlField.create(fieldInfo.a, fieldInfo.b,
+					public QlField map(Tuple3<String, QlField, Boolean> fieldInfo) {
+						return QlField.create(null, fieldInfo.a, fieldInfo.b,
 								fieldInfo.c);
+					}
+				});
+		fieldOrFuncParserRef.lazySet(fieldOrFuncParser);
+		return fieldOrFuncParser;
+	}
+	
+	protected Parser<QlField> qualifiedFieldOrFunctionParser() {
+		Parser.Reference<QlField> fieldOrFuncParserRef = Parser.newReference();
+		Parser<Tuple3<String, QlField, Boolean>> simpleParser = simpleFieldParser();
+		Parser<Tuple3<String, QlField, Boolean>> fieldParser = fieldParser(fieldOrFuncParserRef);
+		Parser<String> qualifierParser = regex("[a-zA-Z]+\\s+", false)
+				.followedBy(regex("from", false).not().peek()).atomic().optional(null);
+		Parser<QlField> fieldOrFuncParser = Parsers.pair(qualifierParser,
+				Parsers.or(functionParser(fieldOrFuncParserRef), fieldParser, 
+						simpleParser)).map(
+				new Map<Pair<String, Tuple3<String, QlField, Boolean>>, QlField>() {
+					@Override
+					public QlField map(
+							Pair<String, Tuple3<String, QlField, Boolean>> fieldInfo) {
+						String qualifier = fieldInfo.a == null ? null : fieldInfo.a.trim();
+						return QlField.create(qualifier, fieldInfo.b.a, fieldInfo.b.b,
+								fieldInfo.b.c);
 					}
 				});
 		fieldOrFuncParserRef.lazySet(fieldOrFuncParser);

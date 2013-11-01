@@ -113,30 +113,101 @@ public class JparsecQlParserTest {
 
 	@Test
 	public final void test_field1() {
-		runFieldTest("messages", "messages", false);
+		String word = "messages";
+		runFieldTest(word, null, word, word, false);
+	}
+	
+	@Test
+	public final void test_field1_distinct() {
+		String name = "messages";
+		runFieldTest("distinct messages", "distinct", name, name, false);
 	}
 
 	@Test
 	public final void test_field2() {
-		runFieldTest("users", "users", false);
+		String word = "users";
+		runFieldTest(word, null, word, word, false);
+	}
+	
+	@Test
+	public final void test_field2_distinct() {
+		String name = "users";
+		runFieldTest("distinct users", "distinct", name, name, false);
 	}
 
 	@Test
 	public final void test_field3() {
-		runFieldTest("board.id", "board", false);
+		String word = "board.id";
+		runFieldTest(word, null, "board", word, false);
+	}
+	
+	@Test
+	public final void test_field3_distinct() {
+		runFieldTest("DisTinCT board.id", "DisTinCT", "board", "board.id", false);
 	}
 
 	@Test
 	public final void test_field4() {
-		runFieldTest("message.parent.author.uid", "message", false);
+		String word = "message.parent.author.uid";
+		runFieldTest(word, null, "message", word, false);
 	}
 
-	private final void runFieldTest(String word, String name, boolean isStar) {
-		QlField qlField = inst.fieldOrFunctionParser().parse(word);
+	@Test
+	public final void test_field4_distinct() {
+		runFieldTest("DISTINCT message.parent.author.uid", "DISTINCT", "message", 
+				"message.parent.author.uid", false);
+	}
+	
+	@Test
+	public final void test_field5() {
+		String word = "count(*)";
+		runFieldTest(word, null, "count", word, false);
+	}
+	
+	@Test
+	public final void test_field5a() {
+		runFieldTest("count( * )", null, "count", "count(*)", false);
+	}
+	
+	@Test(expected = ParserException.class)
+	public final void test_field5b() {
+		String word = "count (*)";
+		runFieldTest(word, null, "count", word, false);
+		Assert.fail("Parser should not support white space after functions");
+	}
+	
+	@Test
+	public final void test_field6() {
+		String word = "count(kudos)";
+		runFieldTest(word, null, "count", word, false);
+	}
+	
+	@Test
+	public final void test_field7() {
+		String word = "kudos.sum(weight)";
+		runFieldTest(word, null, "kudos", word, false);
+	}
+	
+	@Test
+	public final void test_field8() {
+		String word = "sum(kudos.sum(weight))";
+		runFieldTest(word, null, "sum", word, false);
+	}
+	
+	@Test
+	public final void test_field9() {
+		String word = "crazyFunction(crazyCollection.superFunction(unexpectedInnerField))";
+		runFieldTest(word, null, "crazyFunction", word, false);
+	}
+
+	private final void runFieldTest(String word, String qualifier, String name, String expectedQualifiedName, 
+			boolean isStar) {
+		QlField qlField = inst.qualifiedFieldOrFunctionParser().parse(word);
 		assertNotNull(qlField);
-		assertEquals(word, qlField.getQualifiedName());
+		assertEquals(expectedQualifiedName, qlField.getQualifiedName());
 		assertEquals(name, qlField.getName());
 		assertEquals(isStar, qlField.isStar());
+		assertEquals(qualifier, qlField.getQualifier());
 	}
 
 	@Test(expected = ParserException.class)
@@ -646,13 +717,13 @@ public class JparsecQlParserTest {
 	@Test
 	public final void test_constraint5() {
 		runConstraintTest("board.id IN ('a','b','c')",
-				getStringCollectionConstraint(QlField.create("board", QlField.create("id"), false), IN, "a", "b", "c"));
+				getStringCollectionConstraint(QlField.create(null, "board", QlField.create("id"), false), IN, "a", "b", "c"));
 	}
 
 	@Test
 	public final void test_constraint6() {
 		runConstraintTest("user.uid IN (1,2,3)",
-				getNumberCollectionConstraint(QlField.create("user", QlField.create("uid"), false), IN, 1, 2, 3));
+				getNumberCollectionConstraint(QlField.create(null, "user", QlField.create("uid"), false), IN, 1, 2, 3));
 	}
 
 	@Test
@@ -730,6 +801,34 @@ public class JparsecQlParserTest {
 			String word = "";
 			inst.constraintsParser().parse(word);
 			Assert.fail("Constraints cannot be blank");
+	}
+	
+	@Test(expected = InvalidQueryException.class)
+	public final void test_constraints_a() throws InvalidQueryException, QueryValidationException {
+			String word = "";
+			inst.parseQlConstraintsClause(word);
+			Assert.fail("Constraints cannot be blank");
+	}
+	
+	@Test(expected = InvalidQueryException.class)
+	public final void test_constraints_b() throws InvalidQueryException, QueryValidationException {
+			String word = "WHERE id = 5";
+			inst.parseQlConstraintsClause(word);
+			Assert.fail("Constraints clause cannot begin with the \"WHERE\" keyword.");
+	}
+	
+	@Test(expected = InvalidQueryException.class)
+	public final void test_constraints_c() throws InvalidQueryException, QueryValidationException {
+			String word = "distinct id = 5 AND name = 'david'";
+			inst.parseQlConstraintsClause(word);
+			Assert.fail("Qualifiers cannot exist in the WHERE clause");
+	}
+	
+	@Test(expected = InvalidQueryException.class)
+	public final void test_constraints_d() throws InvalidQueryException, QueryValidationException {
+		String word = "id = 5 AND distinct name = 'david'";
+			inst.parseQlConstraintsClause(word);
+			Assert.fail("Qualifiers cannot exist in the WHERE clause");
 	}
 
 	@Test
@@ -819,8 +918,20 @@ public class JparsecQlParserTest {
 	}
 	
 	private final void runConstraintsTest(String query, QlBooleanConstraintNode expected) {
+		// Test the actual parser
 		QlBooleanConstraintNode actual = inst.constraintsParser().parse(query);
 		assertEquals(expected, actual);
+		try {
+			// Test the public end point in the StarQL API
+			actual = inst.parseQlConstraintsClause(query).getRoot();
+			assertEquals(expected, actual);
+		} catch (InvalidQueryException e) {
+			e.printStackTrace();
+			Assert.fail();
+		} catch (QueryValidationException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
 	}
 
 	/*
@@ -881,6 +992,19 @@ public class JparsecQlParserTest {
 		}
 		return fields;
 	}
+	
+	private List<QlField> getFields(String[] fieldNames, String[] fieldQualifiers) {
+		if (fieldNames.length == 0) {
+			return Lists.newArrayList(QlField.create("*"));
+		}
+		List<QlField> fields = Lists.newArrayList();
+		for (int i=0;i<fieldNames.length;i++) {
+			String name = fieldNames[i];
+			String qualifier = fieldQualifiers[i];
+			fields.add(QlField.create(qualifier, name));
+		}
+		return fields;
+	}
 
 	@Test
 	public final void test_qlSelectStatement_fields() {
@@ -905,6 +1029,14 @@ public class JparsecQlParserTest {
 	 * 		SORTED *QL SELECT STATEMENTS
 	 * ===================================================
 	 */
+	@Test(expected = InvalidQueryException.class)
+	public final void test_qlSelectStatementOrderByDistinctFailure() throws InvalidQueryException, 
+			QueryValidationException {
+		String query = "SELECT * FROM users ORDER BY distinct date ASC";
+		inst.parseQlSelect(query);
+		Assert.fail("The distinc keyword cannot be used in the ORDER BY clause.");
+	}
+	
 	@Test
 	public final void test_qlSelectStatement_simpleOrderBy() {
 		String query = "SELECT * FROM users ORDER BY date ASC";
@@ -927,6 +1059,44 @@ public class JparsecQlParserTest {
 	public final void test_qlSelectStatement_fieldsOrderBy() {
 		String query = "SELECT uid,login, email,firstName FROM users ORDER BY email DESC";
 		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		String table = "users";
+		QlBooleanConstraintNode constraints = null;
+		QlSortClause sortConstraint = getSortClause("email", DESC);
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(fields)
+				.setCollection(table)
+				.setConstraints(constraints)
+				.setSortConstraint(sortConstraint)
+				.setPageConstraints(pageConstraints)
+				.build();
+		verify(query, expected);
+	}
+
+	@Test
+	public final void test_qlSelectStatement_fieldsOrderBy1() {
+		String query = "SELECT DISTINCT uid,login, email,firstName FROM users ORDER BY email DESC";
+		List<QlField> fields = getFields(new String[]{"uid", "login", "email", "firstName"},
+				new String[]{"DISTINCT", null, null, null});
+		String table = "users";
+		QlBooleanConstraintNode constraints = null;
+		QlSortClause sortConstraint = getSortClause("email", DESC);
+		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
+		QlSelectStatement expected = new QlSelectStatement.Builder()
+				.setFields(fields)
+				.setCollection(table)
+				.setConstraints(constraints)
+				.setSortConstraint(sortConstraint)
+				.setPageConstraints(pageConstraints)
+				.build();
+		verify(query, expected);
+	}
+
+	@Test
+	public final void test_qlSelectStatement_fieldsOrderBy2() {
+		String query = "SELECT uid,login, email,DISTINCT firstName FROM users ORDER BY email DESC";
+		List<QlField> fields = getFields(new String[]{"uid", "login", "email", "firstName"},
+				new String[]{null, null, null, "DISTINCT"});
 		String table = "users";
 		QlBooleanConstraintNode constraints = null;
 		QlSortClause sortConstraint = getSortClause("email", DESC);
@@ -1128,7 +1298,6 @@ public class JparsecQlParserTest {
 		}
 	}
 	
-	// HERE
 	@Test
 	public final void test_qlSelectStatement_simpleSingleWhereSort() {
 		String query = "SELECT * FROM users WHERE email='david.esposito@lithium.com' ORDER BY date ASC";
@@ -1147,7 +1316,6 @@ public class JparsecQlParserTest {
 		verify(query, expected);
 	}
 	
-	// HERE
 	@Test
 	public final void test_qlSelectStatement_fieldsTwoWhereSort() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50 ORDER BY email DESC";
@@ -1238,7 +1406,6 @@ public class JparsecQlParserTest {
 		verify(query, expected);
 	}
 	
-	// HERE
 	@Test
 	public final void test_qlSelectStatement_fieldsThreeSort() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50 OR login!='davidE' ORDER BY age DESC";
@@ -1266,7 +1433,7 @@ public class JparsecQlParserTest {
 	@Test
 	public final void test_qlSelectStatement_simpleFunctionInFields() {
 		String query = "SELECT count( * ) FROM messages";
-		QlField field = QlField.create("count", QlField.create("*"), true);
+		QlField field = QlField.create(null, "count", QlField.create("*"), true);
 		String table = "messages";
 		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
 		
@@ -1279,7 +1446,7 @@ public class JparsecQlParserTest {
 	@Test
 	public final void test_qlSelectStatement_objectFunctionInFields() {
 		String query = "SELECT kudos.sum(weight) FROM messages";
-		QlField field = QlField.create("kudos", QlField.create("sum", QlField.create("weight"), true), false);
+		QlField field = QlField.create(null, "kudos", QlField.create(null, "sum", QlField.create("weight"), true), false);
 		String table = "messages";
 		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
 		
@@ -1293,9 +1460,9 @@ public class JparsecQlParserTest {
 	public final void test_qlSelectStatement_functionInFunctionInFields() {
 		String query = "SELECT sum(kudos.count(*)) FROM messages";
 		QlField star = QlField.create("*");
-		QlField count = QlField.create("count", star, true);
-		QlField kudos = QlField.create("kudos", count, false);
-		QlField field = QlField.create("sum", kudos, true);
+		QlField count = QlField.create(null, "count", star, true);
+		QlField kudos = QlField.create(null, "kudos", count, false);
+		QlField field = QlField.create(null, "sum", kudos, true);
 		
 		String table = "messages";
 		QlPageConstraints pageConstraints = QlPageConstraints.ALL;

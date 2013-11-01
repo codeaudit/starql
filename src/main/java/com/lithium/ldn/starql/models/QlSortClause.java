@@ -70,7 +70,10 @@ public class QlSortClause {
 			return this;
 		}
 		public Builder setField(String name, QlField subObject, boolean isFunction) {
-			this.field = QlField.create(name, subObject, isFunction);
+			return setField(null, name, subObject, isFunction);
+		}
+		public Builder setField(String qualifier, String name, QlField subObject, boolean isFunction) {
+			this.field = QlField.create(qualifier, name, subObject, isFunction);
 			return this;
 		}
 		public QlSortOrderType getOrder() {

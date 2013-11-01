@@ -85,7 +85,10 @@ public final class QlConstraint implements QlBooleanConstraintNode {
 			return this;
 		}
 		public Builder setKey(String name, QlField subObject, boolean isFunction) {
-			this.key = QlField.create(name, subObject, isFunction);
+			return setKey(null, name, subObject, isFunction);
+		}
+		public Builder setKey(String qualifier, String name, QlField subObject, boolean isFunction) {
+			this.key = QlField.create(qualifier, name, subObject, isFunction);
 			return this;
 		}
 		public QlConstraintValue getValue() {

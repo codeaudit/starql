@@ -17,6 +17,7 @@ public class QlField {
 
 	private final String name;
 	private final String qualifiedName;
+	private final String qualifier;
 	private final QlField subObject;
 	private final boolean isStar;
 	private final boolean isFunction;
@@ -28,6 +29,21 @@ public class QlField {
 	 */
 	public final String getName() {
 		return name;
+	}
+	
+	public final boolean hasQualifier() {
+		return qualifier != null;
+	}
+	
+	/**
+	 * Get the qualifier for this field if it exists e.g.
+	 *  
+	 * 		SELECT DISTINT topic.id FROM messages 
+	 * 
+	 * @return The qualifier if it exists, {@code null} otherwise.
+	 */
+	public final String getQualifier() {
+		return qualifier;
 	}
 	
 	/**
@@ -53,15 +69,20 @@ public class QlField {
 	}
 	
 	public static final QlField create(String name) {
-		return new QlField(name, null, false);
+		return create(null, name);
 	}
 	
-	public static final QlField create(String name, QlField subObject, boolean isFunction) {
-		return new QlField(name, subObject, isFunction);
+	public static final QlField create(String qualifier, String name) {
+		return create(qualifier, name, null, false);
+	}
+	
+	public static final QlField create(String qualifier, String name, QlField subObject, boolean isFunction) {
+		return new QlField(qualifier, name, subObject, isFunction);
 	}
 
-	private QlField(String name, QlField subObject, boolean isFunction) {
+	private QlField(String qualifier, String name, QlField subObject, boolean isFunction) {
 		this.name = name;
+		this.qualifier = qualifier;
 		this.isStar = name.equals("*");
 		this.subObject = subObject;
 		this.isFunction = isFunction;
@@ -94,8 +115,8 @@ public class QlField {
 		public List<QlField> getFields() {
 			return fields;
 		}
-		public CollectionBuilder add(String name, QlField subObject, boolean isFunction) {
-			return add(new QlField(name, subObject, isFunction));
+		public CollectionBuilder add(String qualifier, String name, QlField subObject, boolean isFunction) {
+			return add(new QlField(qualifier, name, subObject, isFunction));
 		}
 		public CollectionBuilder add(QlField field) {
 			fields.add(field);
