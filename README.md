@@ -52,3 +52,34 @@ Partial repsonses can be defined by using comma seperated fields. Recursively de
 Get a mobile view of a user for display in a forum:
 
 <code>SELECT id,name,rank,registration_time,avatar.url,avatar.size FROM users</code>
+
+Versions
+========
+### 1.0
+1. Parser Endpoints and Supported Clauses
+  2. SELECT Statement
+    3. Fields Clause
+    4. Collection Clause
+    5. WHERE Clause
+    6. ORDER BY Clause
+    7. LIMIT and OFFSET Clauses
+8. Fields support simple field and unlimited number of sub-fields.
+9. Where clause supportes all operators {=, !=, <, >, <=, >=, IN }
+10. Order by accepts fields (simple or sub-fields).
+11. Limit and Offset fully supported.
+
+### 1.1
+1. Fields supports functions.
+2. Where clause supports functions. Added string search operators { LIKE, MATCHES }
+3. Order by Clause supports functions.
+4. Added support for query validation.
+
+### 1.2
+Skipped Version
+
+### 1.3
+1. New Parser Endpoints and Supported Clauses
+  2. WHERE Clause
+    3. Constraints Clause
+2. Fields supports field qualifiers e.g. SELECT DISTINCT topic.id FROM messages
+3. Where clause supports public endpoints with validation.
