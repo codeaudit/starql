@@ -1477,8 +1477,8 @@ public class JparsecQlParserTest {
 	public final void test_qlSelectStatement_FunctionInWhere() {
 		String query = "SELECT * FROM messages WHERE kudos.count(*) > 0";
 		QlField star = QlField.create("*");
-		QlField count = QlField.create("count", star, true);
-		QlField kudos = QlField.create("kudos", count, false);
+		QlField count = QlField.create(null, "count", star, true);
+		QlField kudos = QlField.create(null, "kudos", count, false);
 
 		QlBooleanConstraintNode constraint = new QlConstraint(kudos,
 				new QlConstraintValueNumber(0),
@@ -1497,8 +1497,8 @@ public class JparsecQlParserTest {
 	public final void test_qlSelectStatement_FunctionInWhereAndOrderBy() {
 		String query = "SELECT * FROM messages WHERE kudos.count(*) > 0 ORDER BY kudos.count(*) DESC";
 		QlField star = QlField.create("*");
-		QlField count = QlField.create("count", star, true);
-		QlField kudos = QlField.create("kudos", count, false);
+		QlField count = QlField.create(null, "count", star, true);
+		QlField kudos = QlField.create(null, "kudos", count, false);
 
 		QlBooleanConstraintNode constraint = new QlConstraint(kudos,
 				new QlConstraintValueNumber(0),
