@@ -1,8 +1,7 @@
 package com.lithium.ldn.starql.models;
 
-import java.util.Date;
-
-import com.fasterxml.jackson.databind.util.ISO8601Utils;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * A String value of a boolean constraint in the WHERE clause of a StarQL SELECT Statement.
@@ -12,19 +11,19 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
  */
 public class QlConstraintValueDate extends QlConstraintValue {
 
-	private final Date date;
+	private final DateTime date;
 	private final String isoString;
 	
-	public QlConstraintValueDate(Date date) {
+	public QlConstraintValueDate(DateTime date) {
 		this.date = date;
-		this.isoString = ISO8601Utils.format(date);
+		this.isoString = date.toString(ISODateTimeFormat.dateTime());
 	}
 	
 	/**
 	 * 
 	 * @return The date value of the boolean constraint. Never {@code null}.
 	 */
-	public Date getValue() {
+	public DateTime getValue() {
 		return date;
 	}
 	

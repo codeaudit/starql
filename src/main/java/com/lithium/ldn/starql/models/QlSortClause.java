@@ -46,7 +46,7 @@ public class QlSortClause {
 	 * @return A string representation of the current object.
 	 */
 	public String getQueryString() {
-		return "SORTBY " + field.getName() + " " + sortOrder.name();
+		return field.getName() + " " + sortOrder.name();
 	}
 
 	@Override

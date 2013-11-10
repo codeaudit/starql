@@ -1,16 +1,17 @@
+
 package com.lithium.ldn.starql.models;
-
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.QueryStatement;
 
 /**
- * An unmutable representation of a StarQL SELECT Statement.
+ * An immutable representation of a StarQL SELECT Statement.
  * 
  * @author David Esposito
  */
@@ -19,7 +20,7 @@ public class QlSelectStatement implements QueryStatement{
 	private final List<QlField> fields;
 	private final String table;
 	private final QlBooleanConstraintNode constraints;
-	private final QlSortClause sortConstraint;
+	private final List<QlSortClause> sortConstraints;
 	private final String queryString;
 	private final QlPageConstraints pageConstraints;
 
@@ -70,16 +71,19 @@ public class QlSelectStatement implements QueryStatement{
 		return hasConstraints() && constraints.isLeaf();
 	}
 	
-	public final boolean hasSortConstraint() {
-		return sortConstraint != null;
+	/**
+	 * return The number of sort constraints. 
+	 */
+	public final int getSortConstraintCount() {
+		return sortConstraints.size();
 	}
 	
 	/**
 	 * 
-	 * @return Sort constraint. Could be null.
+	 * @return Sort constraint list in order defined. Could be empty.
 	 */
-	public final QlSortClause getSortConstraint() {
-		return sortConstraint;
+	public final List<QlSortClause> getSortConstraints() {
+		return sortConstraints;
 	}
 
 	/**
@@ -115,11 +119,11 @@ public class QlSelectStatement implements QueryStatement{
 	}
 
 	private QlSelectStatement(List<QlField> fields, String table, QlBooleanConstraintNode constraints,
-			QlSortClause sortConstraint, QlPageConstraints pageConstraints) {
-		this.fields = Collections.unmodifiableList(fields);
+			List<QlSortClause> sortConstraints, QlPageConstraints pageConstraints) {
+		this.fields = ImmutableList.copyOf(fields);
 		this.table = table;
 		this.constraints = constraints;
-		this.sortConstraint = sortConstraint;
+		this.sortConstraints = ImmutableList.copyOf(sortConstraints);
 		this.queryString = initQueryString();
 		this.pageConstraints = pageConstraints;
 	}
@@ -127,14 +131,14 @@ public class QlSelectStatement implements QueryStatement{
 	@Override
 	public String toString() {
 		return "QlSelectStatement [fields=" + fields + ", table=" + table + ", constraints=" + constraints
-				+ ", sortConstraint=" + sortConstraint + ", queryString=" + queryString + ", pageConstraints="
+				+ ", sortConstraint=" + sortConstraints + ", queryString=" + queryString + ", pageConstraints="
 				+ pageConstraints + "]";
 	}
 
 	private String initQueryString() {
 		return "SELECT " + fieldsString() + " FROM " + table 
 				+ " " + (hasConstraints() ? constraints.getQueryString() : "")
-				+ " " + (hasSortConstraint() ? sortConstraint.getQueryString() : "")
+				+ " " + getSortString()
 				+ " " + (hasLimitConstraint() ? "LIMIT " + getLimitConstraint() : "")
 				+ " " + (hasOffsetConstraint() ? "OFFSET " + getOffsetConstraint() : "");
 		
@@ -143,9 +147,22 @@ public class QlSelectStatement implements QueryStatement{
 	private String fieldsString() {
 		StringBuilder sb = new StringBuilder();
 		for (QlField f : fields) {
-			sb.append(f.getName()).append(",");
+			sb.append((f.hasQualifier() ? f.getQualifier():"") + 
+					f.getQualifiedName()).append(",");
 		}
 		return sb.deleteCharAt(sb.length()-1).toString();
+	}
+	
+	private String getSortString() {
+		StringBuilder sb = new StringBuilder();
+		if (getSortConstraintCount() > 0) {
+			sb.append("ORDER BY ");
+			for (QlSortClause s : sortConstraints) {
+				sb.append(s.getQueryString()).append(",");
+			}
+			sb.deleteCharAt(sb.length()-1);
+		}
+		return sb.toString();
 	}
 
 	@Override
@@ -158,18 +175,46 @@ public class QlSelectStatement implements QueryStatement{
 		return EqualsBuilder.reflectionEquals(this, obj);
 	}
 	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static Builder builder(QlSelectStatement copy) {
+		return new Builder(copy);
+	}
+	
 	public static class Builder {
 		private List<QlField> fields;
 		private String table;
 		private QlBooleanConstraintNode constraints;
-		private QlSortClause sortConstraint;
-		private String queryString;
+		private List<QlSortClause> sortConstraints;
 		private QlPageConstraints pageConstraints;
+		private Builder() { 
+			fields = Lists.newArrayList();
+			sortConstraints = Lists.newArrayList();
+		}
+		private Builder(QlSelectStatement copy) {
+			this.fields = copy.fields;
+			this.table = copy.table;
+			this.constraints = copy.constraints;
+			this.sortConstraints = copy.sortConstraints;
+			this.pageConstraints = copy.pageConstraints;
+		}
 		public List<QlField> getFields() {
 			return fields;
 		}
 		public Builder setFields(List<QlField> fields) {
 			this.fields = fields;
+			return this;
+		}
+		/**
+		 * Fields will be instantiated as an empty list upon creation of the Builder. If
+		 * {@code setFields(null)} is called then this method will throw a NullPointerException. 
+		 * @param field Fields to add.
+		 * @return The current builder object for convenience.
+		 */
+		public Builder addField(QlField...field) {
+			fields.addAll(Lists.newArrayList(field));
 			return this;
 		}
 		public String getCollection() {
@@ -186,18 +231,23 @@ public class QlSelectStatement implements QueryStatement{
 			this.constraints = constraints;
 			return this;
 		}
-		public QlSortClause getSortConstraint() {
-			return sortConstraint;
+		public List<QlSortClause> getSortConstraints() {
+			return sortConstraints;
 		}
-		public Builder setSortConstraint(QlSortClause sortConstraint) {
-			this.sortConstraint = sortConstraint;
+		public Builder setSortConstraints(List<QlSortClause> sortConstraints) {
+			this.sortConstraints = sortConstraints == null 
+					? new ArrayList<QlSortClause>() 
+					:sortConstraints;
 			return this;
 		}
-		public String getQueryString() {
-			return queryString;
-		}
-		public Builder setQueryString(String queryString) {
-			this.queryString = queryString;
+		/**
+		 * Sort Constraints will be instantiated as an empty list upon creation of the Builder. If
+		 * {@code setSortConstraints(null)} is called then this method will throw a NullPointerException. 
+		 * @param sortConstraint Sort constraints to add.
+		 * @return The current builder object for convenience.
+		 */
+		public Builder addSortConstraint(QlSortClause...sortConstraint) {
+			sortConstraints.addAll(Lists.newArrayList(sortConstraint));
 			return this;
 		}
 		public QlPageConstraints getPageConstraints() {
@@ -212,7 +262,7 @@ public class QlSelectStatement implements QueryStatement{
 		 * @return An unmutable representation of the current state of this builder. Never {@code null}.
 		 */
 		public QlSelectStatement build() {
-			return new QlSelectStatement(fields, table, constraints, sortConstraint, pageConstraints);
+			return new QlSelectStatement(fields, table, constraints, sortConstraints, pageConstraints);
 		}
 	}
 }

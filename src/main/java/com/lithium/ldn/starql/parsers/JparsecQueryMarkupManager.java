@@ -15,8 +15,9 @@ import org.codehaus.jparsec.functors.Pair;
 import org.codehaus.jparsec.functors.Tuple3;
 import org.codehaus.jparsec.functors.Tuple5;
 import org.codehaus.jparsec.pattern.Patterns;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 
-import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.exceptions.InvalidQueryException;
 import com.lithium.ldn.starql.exceptions.QueryValidationException;
@@ -43,7 +44,11 @@ import com.lithium.ldn.starql.validation.QlSelectStatementValidator;
  * JParsec implementation of QueryMarkupManger.
  * 
  * @author David Esposito
- * @testing When making changes to this file, make sure to run JparsecQlParserTest.
+ * @testing When making changes to this file, make sure to run 
+ * 		<pre>
+ * 		{@code mvn clean verify}
+ * 		</pre> 
+ * 		from the base of this project.
  */
 public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
@@ -115,16 +120,16 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				padWithWhitespace(whereClauseParser().optional(), true), 
 				padWithWhitespace(orderByParser().optional(), false),
 				padWithWhitespace(pageConstraintParser().optional(), false))
-			.map(new Map<Tuple5<List<QlField>, String, QlBooleanConstraintNode, QlSortClause, QlPageConstraints>, 
+			.map(new Map<Tuple5<List<QlField>, String, QlBooleanConstraintNode, List<QlSortClause>, QlPageConstraints>, 
 					QlSelectStatement>() {
 						@Override
 						public QlSelectStatement map(Tuple5<List<QlField>, String, QlBooleanConstraintNode, 
-								QlSortClause, QlPageConstraints> arg0) {
-							return new QlSelectStatement.Builder()
+								List<QlSortClause>, QlPageConstraints> arg0) {
+							return QlSelectStatement.builder()
 									.setFields(arg0.a)
 									.setCollection(arg0.b)
 									.setConstraints(arg0.c)
-									.setSortConstraint(arg0.d)
+									.setSortConstraints(arg0.d)
 									.setPageConstraints(arg0.e)
 									.build();
 						}
@@ -235,13 +240,18 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * 		ORDER BY
 	 * ====================================================
 	 */
-	protected Parser<QlSortClause> orderByParser() {
+	protected Parser<List<QlSortClause>> orderByParser() {
 		return paddedRegex("ORDER BY", false, false)
-				.next(Parsers.tuple(fieldOrFunctionParser(), sortOrderTypeParser()))
-				.map(new Map<Pair<QlField, QlSortOrderType>, QlSortClause>() {
+				.next(Parsers.tuple(fieldOrFunctionParser(), sortOrderTypeParser())
+				.sepBy1(paddedRegex(",", false, false)))
+				.map(new Map<List<Pair<QlField, QlSortOrderType>>, List<QlSortClause>>() {
 						@Override
-						public QlSortClause map(Pair<QlField, QlSortOrderType> arg0) {
-							return new QlSortClause(arg0.a, arg0.b);
+						public List<QlSortClause> map(List<Pair<QlField, QlSortOrderType>> arg0) {
+							List<QlSortClause> temp = Lists.newArrayList();
+							for (Pair<QlField, QlSortOrderType> p : arg0) {
+								temp.add(new QlSortClause(p.a, p.b));
+							}
+							return temp;
 						}
 				});
 	}
@@ -498,12 +508,20 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	
 	protected Parser<QlConstraintValueDate> dateValueParser() {
-		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|(\\+|-)[0-9]{2}:[0-9]{2})?", true)
+		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?(Z|(\\+|-)[0-9]{2}:[0-9]{2})?", true)
 				.map(new Map<String, QlConstraintValueDate>(){
 					@Override
 					public QlConstraintValueDate map(String arg0) {
-						return new QlConstraintValueDate(ISO8601Utils.parse(arg0));
+						return new QlConstraintValueDate(ISODateTimeFormat.dateTimeParser().parseDateTime(arg0));
 					}
 				});
+	}
+	
+	public static void main(String[] args) throws InvalidQueryException, QueryValidationException {
+		JparsecQueryMarkupManager man = new JparsecQueryMarkupManager();
+		DateTime date = new DateTime();
+		String dateString = date.toString(ISODateTimeFormat.dateTime());
+		System.out.println(dateString);
+		System.out.println(man.dateValueParser().parse(dateString));
 	}
 }
