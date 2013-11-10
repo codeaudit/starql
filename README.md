@@ -83,3 +83,7 @@ Skipped Version
     3. Constraints Clause
 2. Fields supports field qualifiers e.g. SELECT DISTINCT topic.id FROM messages
 3. Where clause supports public endpoints with validation.
+ 
+### 1.4 (Coming Soon)
+1. Order by clause supports multiple, comma seperated, clauses.
+2. Converted all Date instances to use JodaTime objects/parsers rather than java.util.Date.
