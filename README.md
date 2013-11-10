@@ -19,4 +19,4 @@ QueryStatement statement = queryManager.parseQlSelect(query);
 </code></pre>
 
 #### More Information
-See the [Wiki](https://github.com/lithiumtech/starql/wiki/Home) for more information.
+See the [Wiki](https://github.com/lithiumtech/starql/wiki/Home) for more information and [examples](https://github.com/lithiumtech/starql/wiki/Examples).
