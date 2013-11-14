@@ -28,6 +28,7 @@ import com.lithium.ldn.starql.models.QlConstraintPairOperator;
 import com.lithium.ldn.starql.models.QlConstraintValue;
 import com.lithium.ldn.starql.models.QlConstraintValueCollection;
 import com.lithium.ldn.starql.models.QlConstraintValueDate;
+import com.lithium.ldn.starql.models.QlConstraintValueExecutable;
 import com.lithium.ldn.starql.models.QlConstraintValueNumber;
 import com.lithium.ldn.starql.models.QlConstraintValueString;
 import com.lithium.ldn.starql.models.QlField;
@@ -395,7 +396,8 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * @return The value, an integer, quoted string without the quotes, or collection.
 	 */
 	protected Parser<QlConstraintValue> constraintValueParser() {
-		return Parsers.or(dateValueParser(),
+		return Parsers.or(executableValueParser(),
+				dateValueParser(),
 				numericalValueParser(), 
 				collectionValueParser(),
 				stringValueParser()
@@ -458,13 +460,19 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * @return ConstraintValueCollection containing ConstraintValues *MAY BE OF DIFFERENT TYPES*
 	 */
 	protected Parser<QlConstraintValueCollection<? extends QlConstraintValue>> collectionValueParser() {
-		return padWithWhitespace(Parsers.or(stringValueParser(), numericalValueParser()), false).sepBy(padWithWhitespace(regex(",", true), false))
-				.between(padWithWhitespace(regex("\\(", true), false), padWithWhitespace(regex("\\)", true), false))
-				.map(new Map<List<QlConstraintValue>, QlConstraintValueCollection<? extends QlConstraintValue>>(){
+		return padWithWhitespace(
+				Parsers.or(executableValueParser(), stringValueParser(),
+						numericalValueParser()), false)
+				.sepBy(padWithWhitespace(regex(",", true), false))
+				.between(padWithWhitespace(regex("\\(", true), false),
+						padWithWhitespace(regex("\\)", true), false))
+				.map(new Map<List<QlConstraintValue>, QlConstraintValueCollection<? extends QlConstraintValue>>() {
 
 					@Override
-					public QlConstraintValueCollection<? extends QlConstraintValue> map(List<QlConstraintValue> arg0) {
-						return new QlConstraintValueCollection<QlConstraintValue>(arg0);
+					public QlConstraintValueCollection<? extends QlConstraintValue> map(
+							List<QlConstraintValue> arg0) {
+						return new QlConstraintValueCollection<QlConstraintValue>(
+								arg0);
 					}
 				});
 	}
@@ -500,12 +508,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 								return new QlConstraintValueNumber(Long.parseLong(arg0.substring(0, arg0.length())));
 							}
 						} catch (NumberFormatException e) {
-							throw new RuntimeException("Could not convert the following string to a nubmer: " + arg0);
+							throw new RuntimeException("Could not convert the following string to a number: " + arg0);
 						}
 					}
 				});
 	}
-	
 	
 	protected Parser<QlConstraintValueDate> dateValueParser() {
 		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?(Z|(\\+|-)[0-9]{2}:[0-9]{2})?", true)
@@ -513,6 +520,17 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 					@Override
 					public QlConstraintValueDate map(String arg0) {
 						return new QlConstraintValueDate(ISODateTimeFormat.dateTimeParser().parseDateTime(arg0));
+					}
+				});
+	}
+	
+	protected Parser<QlConstraintValueExecutable> executableValueParser() {
+		return regex("\\{.+\\}", true).map(
+				new Map<String, QlConstraintValueExecutable>() {
+					@Override
+					public QlConstraintValueExecutable map(String arg0) {
+						return new QlConstraintValueExecutable(arg0.substring(
+								1, arg0.length() - 1).trim());
 					}
 				});
 	}
