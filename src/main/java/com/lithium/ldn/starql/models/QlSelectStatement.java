@@ -56,12 +56,12 @@ public class QlSelectStatement implements QueryStatement{
 	}
 	
 	/**
-	 * For getting an iterable of all QlConstraints.  Does not preserve constraint pair operators.
+	 * For getting a list of all QlConstraints. Does not includes QlConstraintPairOperators.
 	 * 
-	 * @return An iterable object containing the constraints in prefix order.Does not preserve constraint pair
-	 * operators.
+	 * @return A list object containing the constraints in order from left to right according to how they appear in the
+	 * query statement. Does not include constraint pair operators.
 	 */
-	public final Iterable<QlConstraint> getConstraintsPrefix() {
+	public final List<QlConstraint> getConstraintsList() {
 		return constraintsList;
 	}
 	
