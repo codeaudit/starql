@@ -14,25 +14,69 @@ import com.google.common.collect.Sets;
  */
 public enum QlConstraintOperator {
 
-	// Constraint
+	/**
+	 * Checks Equality be between two objects.
+	 */
 	@SuppressWarnings("unchecked")
 	EQUALS("=", getSet(QlConstraintValueString.class, QlConstraintValueNumber.class)),
+	
+	/**
+	 * Checks non-equality between two objects.
+	 */
 	@SuppressWarnings("unchecked")
 	NOT_EQUALS("!=", getSet(QlConstraintValueString.class, QlConstraintValueNumber.class)),
+	
+	/**
+	 * Checks comparative values for ordered objects. Exclusive bound.
+	 */
 	@SuppressWarnings("unchecked")
 	GREATER_THAN(">", getSet(QlConstraintValueString.class, QlConstraintValueNumber.class)),
+	
+	/**
+	 * Checks comparative values for ordered objects. Exclusive bound.
+	 */
 	@SuppressWarnings("unchecked")
 	LESS_THAN("<", getSet(QlConstraintValueString.class, QlConstraintValueNumber.class)),
+	
+	/**
+	 * Checks comparative values for ordered objects. Inclusive bound.
+	 */
 	@SuppressWarnings("unchecked")
 	GREATER_THAN_EQUAL(">=", getSet(QlConstraintValueString.class, QlConstraintValueNumber.class)),
+	
+	/**
+	 * Checks comparative values for ordered objects. Inclusive bound.
+	 */
 	@SuppressWarnings("unchecked")
 	LESS_THAN_EQUAL("<=", getSet(QlConstraintValueString.class,QlConstraintValueNumber.class)),
+	
+	/**
+	 * Checks equality to at least one value in a collection. e.g.
+	 * 
+	 *   id IN (1,2,3)
+	 *   
+	 *   which is equivalient to
+	 *   
+	 *   id = 1 OR id = 2 OR id = 3
+	 */
 	@SuppressWarnings("unchecked")
 	IN("IN", getSet(QlConstraintValueCollection.class)),
+	
+	
 	@SuppressWarnings("unchecked")
 	MATCHES("MATCHES", getSet(QlConstraintValueString.class)),
+	
+	/**
+	 * Used for analyzed string search.
+	 */
 	@SuppressWarnings("unchecked")
 	LIKE("LIKE", getSet(QlConstraintValueString.class, QlConstraintValueCollection.class)),
+	
+	/**
+	 * Used or substring search. Fuzzy bounds are defined defined by '%'. e.g.
+	 * 
+	 * subject LIKE '%Lithium%'
+	 */
 	@SuppressWarnings("unchecked")
 	UNKNOWN("UNKNOWN", getSet());
 	
