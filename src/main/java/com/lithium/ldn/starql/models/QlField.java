@@ -59,7 +59,11 @@ public class QlField {
 	public final boolean isStar() {
 		return isStar;
 	}
-	
+
+	public boolean isFunction() {
+		return isFunction;
+	}
+
 	public final boolean hasSubObject() {
 		return subObject != null;
 	}
