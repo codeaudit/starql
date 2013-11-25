@@ -39,6 +39,20 @@ public class QlSelectStatement implements QueryStatement{
 	}
 
 	/**
+	 * If this SELECT statement contains one or more function fields.
+	 *
+	 * @return {@code true} if the statement contains one or more function fields, {@code false} otherwise.
+	 */
+	public final boolean hasFunctionFields() {
+		for (QlField field : fields) {
+			if (field.isFunction()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Get the name of the collection from which resources are being queried.
 	 * 
 	 * @return Name of the collection. Never {@code null}.
@@ -103,7 +117,7 @@ public class QlSelectStatement implements QueryStatement{
 	public final boolean hasSingleConstraint() {
 		return hasConstraints() && constraints.isLeaf();
 	}
-	
+
 	/**
 	 * 
 	 * @return true if there is one or more sort constraint.
