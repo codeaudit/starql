@@ -24,6 +24,7 @@ public class QlSelectStatement implements QueryStatement{
 	private final String queryString;
 	private final QlPageConstraints pageConstraints;
 	private final ImmutableList<QlConstraint> constraintsList;
+	private final boolean hasFunctionFields;
 
 	public final List<QlField> getFields() {
 		return fields;
@@ -36,6 +37,15 @@ public class QlSelectStatement implements QueryStatement{
 	 */
 	public final boolean hasStarFields() {
 		return fields.size() == 1 && fields.get(0).isStar();
+	}
+
+	/**
+	 * If this SELECT statement contains one or more function fields.
+	 *
+	 * @return {@code true} if the statement contains one or more function fields, {@code false} otherwise.
+	 */
+	public final boolean hasFunctionFields() {
+		return hasFunctionFields;
 	}
 
 	/**
@@ -103,7 +113,7 @@ public class QlSelectStatement implements QueryStatement{
 	public final boolean hasSingleConstraint() {
 		return hasConstraints() && constraints.isLeaf();
 	}
-	
+
 	/**
 	 * 
 	 * @return true if there is one or more sort constraint.
@@ -169,6 +179,13 @@ public class QlSelectStatement implements QueryStatement{
 		this.pageConstraints = pageConstraints;
 		this.constraintsList = ImmutableList.copyOf(iterateConstraintsPrefix(new ArrayList<QlConstraint>(),
 				constraints));
+		boolean tmpHasFunctionFields = false;
+		for (QlField field : fields) {
+			if (field.isFunction()) {
+				tmpHasFunctionFields = true;
+			}
+		}
+		this.hasFunctionFields = tmpHasFunctionFields;
 	}
 	
 	@Override
