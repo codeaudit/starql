@@ -76,28 +76,6 @@ public class QlSelectStatement implements QueryStatement{
 	}
 	
 	/**
-	 * Helper method for iterating through a constraint tree and compiling a list of QlConstraint is prefix order.
-	 * Should possibly be in a different place, but must be called by getConstraintsPrefix().
-	 * 
-	 * @param constraintList
-	 * @param constraintNode
-	 */
-	private List<QlConstraint> iterateConstraintsPrefix(List<QlConstraint> constraintList,
-			QlBooleanConstraintNode constraintNode) {
-		if (constraintNode != null) {
-			if (constraintNode.isLeaf()) {
-				constraintList.add((QlConstraint) constraintNode);
-			}
-			else {
-				QlConstraintPair qlConstraintPair = (QlConstraintPair)constraintNode;
-				iterateConstraintsPrefix(constraintList, qlConstraintPair.getLeftHandSide());
-				iterateConstraintsPrefix(constraintList, qlConstraintPair.getRightHandSide());
-			}
-		}
-		return constraintList;
-	}
-	
-	/**
 	 * 
 	 * @return True if {@code getConstraints()!=null}, {@code false} otherwise.
 	 */
@@ -177,8 +155,8 @@ public class QlSelectStatement implements QueryStatement{
 		this.sortConstraints = ImmutableList.copyOf(sortConstraints);
 		this.queryString = initQueryString();
 		this.pageConstraints = pageConstraints;
-		this.constraintsList = ImmutableList.copyOf(iterateConstraintsPrefix(new ArrayList<QlConstraint>(),
-				constraints));
+		this.constraintsList = ImmutableList.copyOf(
+				QlWhereClause.iterateConstraintsPrefix(new ArrayList<QlConstraint>(), constraints));
 		boolean tmpHasFunctionFields = false;
 		for (QlField field : fields) {
 			if (field.isFunction()) {

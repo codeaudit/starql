@@ -21,6 +21,8 @@ import org.joda.time.format.ISODateTimeFormat;
 import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.exceptions.InvalidQueryException;
 import com.lithium.ldn.starql.exceptions.QueryValidationException;
+import com.lithium.ldn.starql.executables.NoOpEvaluator;
+import com.lithium.ldn.starql.executables.QlExecutableConstraintEvaluator;
 import com.lithium.ldn.starql.models.QlBooleanConstraintNode;
 import com.lithium.ldn.starql.models.QlConstraint;
 import com.lithium.ldn.starql.models.QlConstraintOperator;
@@ -54,15 +56,17 @@ import com.lithium.ldn.starql.validation.QlSelectStatementValidator;
 public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	private static final NoOpValidator NO_OP_VALIDATOR = new NoOpValidator();
+	private static final NoOpEvaluator NO_OP_EVALUATOR = new NoOpEvaluator();
 	
 	@Override
 	public QlSelectStatement parseQlSelect(String query) throws InvalidQueryException, 
 			QueryValidationException {
-		return parseQlSelect(query, NO_OP_VALIDATOR);
+		return parseQlSelect(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR);
 	}
 
 	@Override
-	public QlSelectStatement parseQlSelect(String query, QlSelectStatementValidator validator) 
+	public QlSelectStatement parseQlSelect(String query, QlSelectStatementValidator validator, 
+			QlExecutableConstraintEvaluator evaluator) 
 			throws InvalidQueryException, QueryValidationException {
 		if (query == null) {
 			throw new IllegalArgumentException("query cannot be null");
@@ -70,8 +74,12 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 		if (validator == null) {
 			throw new IllegalArgumentException("validator cannot be null");
 		}
+		if (evaluator == null) {
+			throw new IllegalArgumentException("evaluator cannot be null");
+		}
 		try {
 			QlSelectStatement selectStatement = qlSelectParser().parse(query);
+			evaluator.evaluate(selectStatement);
 			validator.validate(selectStatement);
 			return selectStatement;
 		} catch (ParserException e) {
@@ -82,11 +90,12 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	@Override
 	public QlWhereClause parseQlConstraintsClause(String query) throws InvalidQueryException, 
 			QueryValidationException {
-		return parseQlConstraintsClause(query, NO_OP_VALIDATOR);
+		return parseQlConstraintsClause(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR);
 	}
 
 	@Override
-	public QlWhereClause parseQlConstraintsClause(String query, QlConstraintsClauseValidator validator) 
+	public QlWhereClause parseQlConstraintsClause(String query, QlConstraintsClauseValidator validator, 
+			QlExecutableConstraintEvaluator evaluator) 
 			throws InvalidQueryException, QueryValidationException {
 		if (query == null) {
 			throw new IllegalArgumentException("query cannot be null");
@@ -94,12 +103,16 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 		if (validator == null) {
 			throw new IllegalArgumentException("validator cannot be null");
 		}
+		if (evaluator == null) {
+			throw new IllegalArgumentException("evaluator cannot be null");
+		}
 		try {
 			QlBooleanConstraintNode constraintsRootNode = constraintsParser().parse(query);
 			if (constraintsRootNode != null) {
 				QlWhereClause clause = new QlWhereClause.Builder()
 						.setRoot(constraintsRootNode)
 						.build();
+				evaluator.evaluate(clause);
 				validator.validate(clause);
 				return clause;
 			}

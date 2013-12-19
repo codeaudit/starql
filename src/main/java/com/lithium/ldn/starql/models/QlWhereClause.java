@@ -3,6 +3,11 @@ package com.lithium.ldn.starql.models;
 import static com.lithium.ldn.starql.models.QlConstraintPairOperator.AND;
 import static com.lithium.ldn.starql.models.QlConstraintPairOperator.OR;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 /**
  * Representation of Where clause in StarQL SELECT statement.
  * 
@@ -12,9 +17,12 @@ import static com.lithium.ldn.starql.models.QlConstraintPairOperator.OR;
 public class QlWhereClause {
 
 	private final QlBooleanConstraintNode root;
+	private final ImmutableList<QlConstraint> constraintsList;
 	
 	private QlWhereClause(QlBooleanConstraintNode root) {
 		this.root = root;
+		this.constraintsList = ImmutableList.copyOf(
+				iterateConstraintsPrefix(new ArrayList<QlConstraint>(), root));
 	}
 	
 	/**
@@ -24,6 +32,32 @@ public class QlWhereClause {
 	 */
 	public QlBooleanConstraintNode getRoot() {
 		return root;
+	}
+	
+	public List<QlConstraint> getConstraintsList() {
+		return constraintsList;
+	}
+	
+	/**
+	 * Helper method for iterating through a constraint tree and compiling a list of QlConstraint is prefix order.
+	 * Should possibly be in a different place, but must be called by getConstraintsPrefix().
+	 * 
+	 * @param constraintList
+	 * @param constraintNode
+	 */
+	public static List<QlConstraint> iterateConstraintsPrefix(List<QlConstraint> constraintList,
+			QlBooleanConstraintNode constraintNode) {
+		if (constraintNode != null) {
+			if (constraintNode.isLeaf()) {
+				constraintList.add((QlConstraint) constraintNode);
+			}
+			else {
+				QlConstraintPair qlConstraintPair = (QlConstraintPair)constraintNode;
+				iterateConstraintsPrefix(constraintList, qlConstraintPair.getLeftHandSide());
+				iterateConstraintsPrefix(constraintList, qlConstraintPair.getRightHandSide());
+			}
+		}
+		return constraintList;
 	}
 
 	public static class Builder {
