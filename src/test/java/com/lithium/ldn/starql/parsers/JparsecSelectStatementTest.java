@@ -378,8 +378,6 @@ public class JparsecSelectStatementTest extends JparsecTest {
 			assertEquals(expected, parseQlSelect);
 		} catch (InvalidQueryException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
 
@@ -410,8 +408,6 @@ public class JparsecSelectStatementTest extends JparsecTest {
 			QlSelectStatement parseQlSelect = inst.parseQlSelect(query);
 			assertEquals(expected, parseQlSelect);
 		} catch (InvalidQueryException e) {
-			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
-		} catch (QueryValidationException e) {
 			Assert.fail(e.getMessage() + "\n" + e.getStackTrace());
 		}
 	}
@@ -691,8 +687,6 @@ public class JparsecSelectStatementTest extends JparsecTest {
 		try {
 			assertEquals(expected, inst.parseQlSelect(query));
 		} catch (InvalidQueryException e) {
-			throw new RuntimeException(e);
-		} catch (QueryValidationException e) {
 			throw new RuntimeException(e);
 		}
 	}

@@ -152,9 +152,6 @@ public class JparsecConstraintsTest extends JparsecTest {
 		} catch (InvalidQueryException e) {
 			e.printStackTrace();
 			Assert.fail();
-		} catch (QueryValidationException e) {
-			e.printStackTrace();
-			Assert.fail();
 		}
 	}
 }
