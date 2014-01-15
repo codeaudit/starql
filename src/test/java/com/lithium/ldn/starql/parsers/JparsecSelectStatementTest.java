@@ -14,11 +14,11 @@
 
 package com.lithium.ldn.starql.parsers;
 
-import static com.lithium.ldn.starql.models.QlConstraintOperator.EQUALS;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.GREATER_THAN_EQUAL;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.LESS_THAN;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.LESS_THAN_EQUAL;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.NOT_EQUALS;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.EQUALS;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.GREATER_THAN_EQUAL;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LESS_THAN;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LESS_THAN_EQUAL;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.NOT_EQUALS;
 import static com.lithium.ldn.starql.models.QlConstraintPairOperator.AND;
 import static com.lithium.ldn.starql.models.QlConstraintPairOperator.OR;
 import static com.lithium.ldn.starql.models.QlSortOrderType.ASC;
@@ -38,7 +38,7 @@ import com.lithium.ldn.starql.exceptions.InvalidQueryException;
 import com.lithium.ldn.starql.exceptions.QueryValidationException;
 import com.lithium.ldn.starql.models.QlBooleanConstraintNode;
 import com.lithium.ldn.starql.models.QlConstraint;
-import com.lithium.ldn.starql.models.QlConstraintOperator;
+import com.lithium.ldn.starql.models.QlConstraintOperatorType;
 import com.lithium.ldn.starql.models.QlConstraintPair;
 import com.lithium.ldn.starql.models.QlConstraintValueNumber;
 import com.lithium.ldn.starql.models.QlField;
@@ -646,7 +646,7 @@ public class JparsecSelectStatementTest extends JparsecTest {
 
 		QlBooleanConstraintNode constraint = new QlConstraint(kudos,
 				new QlConstraintValueNumber(0),
-				QlConstraintOperator.GREATER_THAN);
+				QlConstraintOperatorType.GREATER_THAN);
 		String table = "messages";
 		QlPageConstraints pageConstraints = QlPageConstraints.ALL;
 
@@ -668,7 +668,7 @@ public class JparsecSelectStatementTest extends JparsecTest {
 
 		QlBooleanConstraintNode constraint = new QlConstraint(kudos,
 				new QlConstraintValueNumber(0),
-				QlConstraintOperator.GREATER_THAN);
+				QlConstraintOperatorType.GREATER_THAN);
 		List<QlSortClause> sortConstraint = Lists.newArrayList(new QlSortClause(kudos, DESC));
 		String table = "messages";
 		QlPageConstraints pageConstraints = QlPageConstraints.ALL;

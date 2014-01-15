@@ -35,7 +35,7 @@ public final class QlConstraintPair implements QlBooleanConstraintNode {
 	}
 	
 	@Override
-	public QlConstraintOperator getConstraintOperator() {
+	public QlConstraintOperatorType getConstraintOperator() {
 		return null;
 	}
 	

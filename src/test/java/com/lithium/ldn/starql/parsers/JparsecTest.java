@@ -7,7 +7,7 @@ import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.models.QlConstraint;
-import com.lithium.ldn.starql.models.QlConstraintOperator;
+import com.lithium.ldn.starql.models.QlConstraintOperatorType;
 import com.lithium.ldn.starql.models.QlConstraintValue;
 import com.lithium.ldn.starql.models.QlConstraintValueCollection;
 import com.lithium.ldn.starql.models.QlConstraintValueDate;
@@ -47,36 +47,36 @@ public abstract class JparsecTest {
 	}
 	
 	//Use this one for recursive ql fields.
-	protected final QlConstraint getStringConstraint(QlField field, String value, QlConstraintOperator op) {
+	protected final QlConstraint getStringConstraint(QlField field, String value, QlConstraintOperatorType op) {
 		return new QlConstraint(field, new QlConstraintValueString(value), op);
 	}
 	
 	//Use this one for recursive ql fields.
-	protected final QlConstraint getNumberConstraint(QlField field, Number value, QlConstraintOperator op) {
+	protected final QlConstraint getNumberConstraint(QlField field, Number value, QlConstraintOperatorType op) {
 		return new QlConstraint(field, new QlConstraintValueNumber(value), op);
 	}
 	
-	protected final QlConstraint getStringConstraint(String key, String value, QlConstraintOperator op) {
+	protected final QlConstraint getStringConstraint(String key, String value, QlConstraintOperatorType op) {
 		return new QlConstraint(QlField.create(key), new QlConstraintValueString(value), op);
 	}
 	
-	protected final QlConstraint getNumberConstraint(String key, Number value, QlConstraintOperator op) {
+	protected final QlConstraint getNumberConstraint(String key, Number value, QlConstraintOperatorType op) {
 		return new QlConstraint(QlField.create(key), new QlConstraintValueNumber(value), op);
 	}
 	
-	protected final QlConstraint getDateConstraint(String key, DateTime value, QlConstraintOperator op) {
+	protected final QlConstraint getDateConstraint(String key, DateTime value, QlConstraintOperatorType op) {
 		return new QlConstraint(QlField.create(key), new QlConstraintValueDate(value), op);
 	}
 	
-	protected final QlConstraint getCollectionConstraint(QlField field, QlConstraintOperator op) {
+	protected final QlConstraint getCollectionConstraint(QlField field, QlConstraintOperatorType op) {
 		return new QlConstraint(field, new QlConstraintValueCollection<QlConstraintValue>(), op);
 	}
 	
-	protected final QlConstraint getStringCollectionConstraint(QlField field, QlConstraintOperator op, String...values) {
+	protected final QlConstraint getStringCollectionConstraint(QlField field, QlConstraintOperatorType op, String...values) {
 		return new QlConstraint(field, getConstraintValueCollection(values), op);
 	}
 	
-	protected final QlConstraint getNumberCollectionConstraint(QlField field, QlConstraintOperator op, Number...values) {
+	protected final QlConstraint getNumberCollectionConstraint(QlField field, QlConstraintOperatorType op, Number...values) {
 		return new QlConstraint(field, getConstraintValueCollectionNumber(values), op);
 	}
 	

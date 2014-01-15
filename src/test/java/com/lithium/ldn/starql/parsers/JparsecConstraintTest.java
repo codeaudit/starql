@@ -1,12 +1,12 @@
 package com.lithium.ldn.starql.parsers;
 
-import static com.lithium.ldn.starql.models.QlConstraintOperator.EQUALS;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.GREATER_THAN;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.IN;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.LESS_THAN_EQUAL;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.LIKE;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.MATCHES;
-import static com.lithium.ldn.starql.models.QlConstraintOperator.NOT_EQUALS;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.EQUALS;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.GREATER_THAN;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.IN;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LESS_THAN_EQUAL;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LIKE;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.MATCHES;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.NOT_EQUALS;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jparsec.error.ParserException;

@@ -26,6 +26,7 @@ import com.lithium.ldn.starql.executables.QlExecutableConstraintEvaluator;
 import com.lithium.ldn.starql.models.QlBooleanConstraintNode;
 import com.lithium.ldn.starql.models.QlConstraint;
 import com.lithium.ldn.starql.models.QlConstraintOperator;
+import com.lithium.ldn.starql.models.QlConstraintOperatorType;
 import com.lithium.ldn.starql.models.QlConstraintPairOperator;
 import com.lithium.ldn.starql.models.QlConstraintValue;
 import com.lithium.ldn.starql.models.QlConstraintValueCollection;
@@ -57,17 +58,19 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	private static final NoOpValidator NO_OP_VALIDATOR = new NoOpValidator();
 	private static final NoOpEvaluator NO_OP_EVALUATOR = new NoOpEvaluator();
+	private static final ConstraintOperatorSupport<QlConstraintOperatorType> DEFAULT_OP_SUPPORT = 
+			new QlConstraintOperatorSupport();
 	
 	@Override
 	public QlSelectStatement parseQlSelect(String query) throws InvalidQueryException, 
 			QueryValidationException {
-		return parseQlSelect(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR);
+		return parseQlSelect(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR, DEFAULT_OP_SUPPORT);
 	}
 
 	@Override
-	public QlSelectStatement parseQlSelect(String query, QlSelectStatementValidator validator, 
-			QlExecutableConstraintEvaluator evaluator) 
-			throws InvalidQueryException, QueryValidationException {
+	public <OperatorT extends QlConstraintOperator> QlSelectStatement parseQlSelect(String query, 
+			QlSelectStatementValidator validator, QlExecutableConstraintEvaluator evaluator, 
+			ConstraintOperatorSupport<OperatorT> opSupport) throws InvalidQueryException, QueryValidationException {
 		if (query == null) {
 			throw new IllegalArgumentException("query cannot be null");
 		}
@@ -77,8 +80,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 		if (evaluator == null) {
 			throw new IllegalArgumentException("evaluator cannot be null");
 		}
+		if (opSupport == null) {
+			throw new IllegalArgumentException("operator support cannot be null");
+		}
 		try {
-			QlSelectStatement selectStatement = qlSelectParser().parse(query);
+			QlSelectStatement selectStatement = qlSelectParser(opSupport).parse(query);
 			evaluator.evaluate(selectStatement);
 			validator.validate(selectStatement);
 			return selectStatement;
@@ -90,13 +96,13 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	@Override
 	public QlWhereClause parseQlConstraintsClause(String query) throws InvalidQueryException, 
 			QueryValidationException {
-		return parseQlConstraintsClause(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR);
+		return parseQlConstraintsClause(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR, DEFAULT_OP_SUPPORT);
 	}
 
 	@Override
-	public QlWhereClause parseQlConstraintsClause(String query, QlConstraintsClauseValidator validator, 
-			QlExecutableConstraintEvaluator evaluator) 
-			throws InvalidQueryException, QueryValidationException {
+	public <OperatorT extends QlConstraintOperator> QlWhereClause parseQlConstraintsClause(String query, 
+			QlConstraintsClauseValidator validator, QlExecutableConstraintEvaluator evaluator, 
+			ConstraintOperatorSupport<OperatorT> opSupport) throws InvalidQueryException, QueryValidationException {
 		if (query == null) {
 			throw new IllegalArgumentException("query cannot be null");
 		}
@@ -106,8 +112,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 		if (evaluator == null) {
 			throw new IllegalArgumentException("evaluator cannot be null");
 		}
+		if (opSupport == null) {
+			throw new IllegalArgumentException("operator support cannot be null");
+		}
 		try {
-			QlBooleanConstraintNode constraintsRootNode = constraintsParser().parse(query);
+			QlBooleanConstraintNode constraintsRootNode = constraintsParser(opSupport).parse(query);
 			if (constraintsRootNode != null) {
 				QlWhereClause clause = new QlWhereClause.Builder()
 						.setRoot(constraintsRootNode)
@@ -128,10 +137,15 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * ====================================================
 	 */	
 	protected Parser<QlSelectStatement> qlSelectParser() {
+		return qlSelectParser(DEFAULT_OP_SUPPORT);
+	}
+	
+	protected <OperatorT extends QlConstraintOperator> Parser<QlSelectStatement> qlSelectParser(
+			ConstraintOperatorSupport<OperatorT> opSupport) {
 		return paddedRegex("SELECT", true, false)
 			.next(Parsers.tuple(fieldsParser().followedBy(paddedRegex("FROM", true, false)), 
 				alphaNumeric(), 
-				padWithWhitespace(whereClauseParser().optional(), true), 
+				padWithWhitespace(whereClauseParser(opSupport).optional(), true), 
 				padWithWhitespace(orderByParser().optional(), false),
 				padWithWhitespace(pageConstraintParser().optional(), false))
 			.map(new Map<Tuple5<List<QlField>, String, QlBooleanConstraintNode, List<QlSortClause>, QlPageConstraints>, 
@@ -309,12 +323,18 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 * 		WHERE
 	 * ====================================================
 	 */
-	protected Parser<QlBooleanConstraintNode> whereClauseParser() {
-		return paddedRegex("WHERE", false, false).next(constraintsParser());
+	protected <OperatorT extends QlConstraintOperator> Parser<QlBooleanConstraintNode> whereClauseParser(
+			ConstraintOperatorSupport<OperatorT> opSupport) {
+		return paddedRegex("WHERE", false, false).next(constraintsParser(opSupport));
 	}
 
 	protected Parser<QlBooleanConstraintNode> constraintsParser() {
-		return padWithWhitespace(constraintParser(), false)
+		return constraintsParser(DEFAULT_OP_SUPPORT);
+	}
+
+	protected <OperatorT extends QlConstraintOperator> Parser<QlBooleanConstraintNode> constraintsParser(
+			ConstraintOperatorSupport<OperatorT> opSupport) {
+		return padWithWhitespace(constraintParser(opSupport), false)
 				.infixl(constraintPairOperatorParser());
 	}
 	
@@ -329,22 +349,37 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlBooleanConstraintNode> constraintParser() {
-		return Parsers.tuple(padWithWhitespace(fieldOrFunctionParser(), false), constraintOperatorParser(), 
+		return constraintParser(DEFAULT_OP_SUPPORT);
+	}
+	
+	protected <OperatorT extends QlConstraintOperator> Parser<QlBooleanConstraintNode> constraintParser(
+			ConstraintOperatorSupport<OperatorT> opSupport) {
+		return Parsers.tuple(padWithWhitespace(fieldOrFunctionParser(), false), constraintOperatorParser(opSupport), 
 				constraintValueParser())
-				.map(new Map<Tuple3<QlField, QlConstraintOperator, QlConstraintValue>, QlBooleanConstraintNode>() {
+				.map(new Map<Tuple3<QlField, OperatorT, QlConstraintValue>, QlBooleanConstraintNode>() {
 					@Override
-					public QlBooleanConstraintNode map(Tuple3<QlField, QlConstraintOperator, QlConstraintValue> arg0) {
+					public QlBooleanConstraintNode map(Tuple3<QlField, OperatorT, QlConstraintValue> arg0) {
 						return new QlConstraint(arg0.a, arg0.c, arg0.b);
 					}
 				});
 	}
 	
-	protected Parser<QlConstraintOperator> constraintOperatorParser() {
-		return paddedRegex("(!=|=|<=|>=|<|>|IN|MATCHES|LIKE)", false, false)
-				.map(new Map<String, QlConstraintOperator>() {
+	protected Parser<QlConstraintOperatorType> constraintOperatorParser() {
+		return constraintOperatorParser(DEFAULT_OP_SUPPORT);
+	}
+	
+	protected <OperatorT extends QlConstraintOperator> Parser<OperatorT> constraintOperatorParser(
+			final ConstraintOperatorSupport<OperatorT> opSupport) {
+		StringBuilder sb = new StringBuilder("(");
+		for (String op : opSupport.getOperatorDisplayStrings()) {
+			sb.append(op).append("|");
+		}
+		String opRegex = sb.deleteCharAt(sb.length()-1).append(")").toString();
+		return paddedRegex(opRegex, false, false)
+				.map(new Map<String, OperatorT>() {
 					@Override
-					public QlConstraintOperator map(String arg0) {
-						return QlConstraintOperator.get(arg0.toString());
+					public OperatorT map(String arg0) {
+						return opSupport.convert(arg0.toString());
 					}
 				});
 	}

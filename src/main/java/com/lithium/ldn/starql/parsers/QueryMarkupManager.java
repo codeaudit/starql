@@ -3,6 +3,7 @@ package com.lithium.ldn.starql.parsers;
 import com.lithium.ldn.starql.exceptions.InvalidQueryException;
 import com.lithium.ldn.starql.exceptions.QueryValidationException;
 import com.lithium.ldn.starql.executables.QlExecutableConstraintEvaluator;
+import com.lithium.ldn.starql.models.QlConstraintOperator;
 import com.lithium.ldn.starql.models.QlSelectStatement;
 import com.lithium.ldn.starql.models.QlWhereClause;
 import com.lithium.ldn.starql.validation.QlConstraintsClauseValidator;
@@ -34,8 +35,9 @@ public interface QueryMarkupManager {
 	 * @return The select statement representing the provided query. Will never be {@code null}.
 	 * @throws InvalidQueryException Please see exception and fix query syntax.
 	 */
-	QlSelectStatement parseQlSelect(String query, QlSelectStatementValidator validator, 
-			QlExecutableConstraintEvaluator evaluator) throws InvalidQueryException, 
+	<OperatorT extends QlConstraintOperator> QlSelectStatement parseQlSelect(String query, 
+			QlSelectStatementValidator validator, QlExecutableConstraintEvaluator evaluator,
+			ConstraintOperatorSupport<OperatorT> opSupport) throws InvalidQueryException, 
 			QueryValidationException;
 	
 	/**
@@ -58,7 +60,8 @@ public interface QueryMarkupManager {
 	 * @return The Constraints clause representing the provided query. Will never be {@code null}
 	 * @throws InvalidQueryException Please see exception and fix query syntax.
 	 */
-	QlWhereClause parseQlConstraintsClause(String query, QlConstraintsClauseValidator validator, 
-			QlExecutableConstraintEvaluator evaluator) throws InvalidQueryException, 
+	<OperatorT extends QlConstraintOperator> QlWhereClause parseQlConstraintsClause(String query, 
+			QlConstraintsClauseValidator validator, QlExecutableConstraintEvaluator evaluator,
+			ConstraintOperatorSupport<OperatorT> opSupport) throws InvalidQueryException, 
 			QueryValidationException;
 }

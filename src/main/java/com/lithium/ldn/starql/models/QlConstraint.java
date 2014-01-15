@@ -8,7 +8,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import com.google.common.collect.Lists;
 
 /**
- * Defines a search constraint by relating a field to a value using {@link QlConstraintOperator}.
+ * Defines a search constraint by relating a field to a value using {@link QlConstraintOperatorType}.
  * 
  * @author David Esposito
  */
@@ -60,7 +60,7 @@ public final class QlConstraint implements QlBooleanConstraintNode {
 
 	@Override
 	public String getQueryString() {
-		return key + operation.getName() + value;
+		return key + operation.getDisplayString() + value;
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public final class QlConstraint implements QlBooleanConstraintNode {
 	public static class Builder {
 		private QlField key;
 		private QlConstraintValue value;
-		private QlConstraintOperator operation;
+		private QlConstraintOperatorType operation;
 		public QlField getKey() {
 			return key;
 		}
@@ -124,10 +124,10 @@ public final class QlConstraint implements QlBooleanConstraintNode {
 			this.value = new QlConstraintValueCollection<QlConstraintValueNumber>(list);
 			return this;
 		}
-		public QlConstraintOperator getOperation() {
+		public QlConstraintOperatorType getOperation() {
 			return operation;
 		}
-		public Builder setOperation(QlConstraintOperator operation) {
+		public Builder setOperation(QlConstraintOperatorType operation) {
 			this.operation = operation;
 			return this;
 		}
