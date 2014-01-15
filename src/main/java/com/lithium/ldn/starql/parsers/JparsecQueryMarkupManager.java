@@ -56,9 +56,9 @@ import com.lithium.ldn.starql.validation.QlSelectStatementValidator;
  */
 public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
-	private static final NoOpValidator NO_OP_VALIDATOR = new NoOpValidator();
-	private static final NoOpEvaluator NO_OP_EVALUATOR = new NoOpEvaluator();
-	private static final ConstraintOperatorSupport<QlConstraintOperatorType> DEFAULT_OP_SUPPORT = 
+	protected static final NoOpValidator NO_OP_VALIDATOR = new NoOpValidator();
+	protected static final NoOpEvaluator NO_OP_EVALUATOR = new NoOpEvaluator();
+	protected static final ConstraintOperatorSupport<QlConstraintOperatorType> DEFAULT_OP_SUPPORT = 
 			new QlConstraintOperatorSupport();
 	
 	@Override

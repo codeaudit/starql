@@ -57,6 +57,7 @@ public interface QueryMarkupManager {
 	 * 		Must not be {@code null}.
 	 * @param evaluator The executable constraint evaluator to be used once the query is successfully 
 	 * 		parsed. The evaluator will be executed before the validator is run. Must not be {@code null}.
+	 * @param opSupport The collection of supported constraint operators. Allows customization.
 	 * @return The Constraints clause representing the provided query. Will never be {@code null}
 	 * @throws InvalidQueryException Please see exception and fix query syntax.
 	 */
