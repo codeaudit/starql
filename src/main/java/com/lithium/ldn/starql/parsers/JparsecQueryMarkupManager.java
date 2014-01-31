@@ -40,6 +40,8 @@ import com.lithium.ldn.starql.models.QlSelectStatement;
 import com.lithium.ldn.starql.models.QlSortClause;
 import com.lithium.ldn.starql.models.QlSortOrderType;
 import com.lithium.ldn.starql.models.QlWhereClause;
+import com.lithium.ldn.starql.postprocessors.NoOpPostProcessor;
+import com.lithium.ldn.starql.postprocessors.QlPostProcessor;
 import com.lithium.ldn.starql.validation.NoOpValidator;
 import com.lithium.ldn.starql.validation.QlConstraintsClauseValidator;
 import com.lithium.ldn.starql.validation.QlSelectStatementValidator;
@@ -58,19 +60,21 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	protected static final NoOpValidator NO_OP_VALIDATOR = new NoOpValidator();
 	protected static final NoOpEvaluator NO_OP_EVALUATOR = new NoOpEvaluator();
+	protected static final NoOpPostProcessor NO_OP_POST_PROCESSOR = new NoOpPostProcessor();
 	protected static final ConstraintOperatorSupport<QlConstraintOperatorType> DEFAULT_OP_SUPPORT = 
 			new QlConstraintOperatorSupport();
 	
 	@Override
 	public QlSelectStatement parseQlSelect(String query) throws InvalidQueryException, 
 			QueryValidationException {
-		return parseQlSelect(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR, DEFAULT_OP_SUPPORT);
+		return parseQlSelect(query, NO_OP_VALIDATOR, NO_OP_EVALUATOR, NO_OP_POST_PROCESSOR, DEFAULT_OP_SUPPORT);
 	}
 
 	@Override
 	public <OperatorT extends QlConstraintOperator> QlSelectStatement parseQlSelect(String query, 
-			QlSelectStatementValidator validator, QlExecutableConstraintEvaluator evaluator, 
-			ConstraintOperatorSupport<OperatorT> opSupport) throws InvalidQueryException, QueryValidationException {
+			QlSelectStatementValidator validator, QlExecutableConstraintEvaluator evaluator,
+			QlPostProcessor postProcessor, ConstraintOperatorSupport<OperatorT> opSupport)
+			throws InvalidQueryException, QueryValidationException {
 		if (query == null) {
 			throw new IllegalArgumentException("query cannot be null");
 		}
@@ -83,11 +87,14 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 		if (opSupport == null) {
 			throw new IllegalArgumentException("operator support cannot be null");
 		}
+		if (postProcessor == null) {
+			throw new IllegalArgumentException("post processor cannot be null");
+		}
 		try {
 			QlSelectStatement selectStatement = qlSelectParser(opSupport).parse(query);
 			evaluator.evaluate(selectStatement);
 			validator.validate(selectStatement);
-			return selectStatement;
+			return postProcessor.processQueryStatement(selectStatement);
 		} catch (ParserException e) {
 			throw new InvalidQueryException(e.getMessage(), query);
 		}
@@ -379,7 +386,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				.map(new Map<String, OperatorT>() {
 					@Override
 					public OperatorT map(String arg0) {
-						return opSupport.convert(arg0.toString());
+						return opSupport.convert(arg0);
 					}
 				});
 	}

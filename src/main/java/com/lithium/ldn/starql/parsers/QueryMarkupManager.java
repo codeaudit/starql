@@ -6,6 +6,7 @@ import com.lithium.ldn.starql.executables.QlExecutableConstraintEvaluator;
 import com.lithium.ldn.starql.models.QlConstraintOperator;
 import com.lithium.ldn.starql.models.QlSelectStatement;
 import com.lithium.ldn.starql.models.QlWhereClause;
+import com.lithium.ldn.starql.postprocessors.QlPostProcessor;
 import com.lithium.ldn.starql.validation.QlConstraintsClauseValidator;
 import com.lithium.ldn.starql.validation.QlSelectStatementValidator;
 
@@ -37,8 +38,8 @@ public interface QueryMarkupManager {
 	 */
 	<OperatorT extends QlConstraintOperator> QlSelectStatement parseQlSelect(String query, 
 			QlSelectStatementValidator validator, QlExecutableConstraintEvaluator evaluator,
-			ConstraintOperatorSupport<OperatorT> opSupport) throws InvalidQueryException, 
-			QueryValidationException;
+			QlPostProcessor postProcessor, ConstraintOperatorSupport<OperatorT> opSupport)
+			throws InvalidQueryException, QueryValidationException;
 	
 	/**
 	 * Converts a StarQL Constraints clause string into a POJO. A no-op validator and evaluator will be used.
