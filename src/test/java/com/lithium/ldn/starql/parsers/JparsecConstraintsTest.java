@@ -104,6 +104,32 @@ public class JparsecConstraintsTest extends JparsecTest {
 	}
 
 	@Test
+	public final void test_constraints4a() {
+		QlBooleanConstraintNode temp = new QlConstraintPair(
+				getNumberConstraint("a", 5, EQUALS), 
+				getStringConstraint("b", "c", EQUALS),
+				AND);
+		QlBooleanConstraintNode expected = new QlConstraintPair(
+				temp, 
+				getNumberConstraint("d", 18, EQUALS), 
+				AND);
+		runConstraintsTest("(a=5 AND b='c') AND d=18", expected);
+	}
+
+	@Test
+	public final void test_constraints4b() {
+		QlBooleanConstraintNode temp = new QlConstraintPair(
+				getStringConstraint("b", "c", EQUALS),
+				getNumberConstraint("d", 18, EQUALS),
+				AND);
+		QlBooleanConstraintNode expected = new QlConstraintPair( 
+				getNumberConstraint("a", 5, EQUALS),
+				temp, 
+				AND);
+		runConstraintsTest("a=5 AND (b='c' AND d=18)", expected);
+	}
+
+	@Test
 	public final void test_constraints5() {
 		QlBooleanConstraintNode temp = new QlConstraintPair(
 				getNumberConstraint("a", 5, EQUALS), 
@@ -114,6 +140,32 @@ public class JparsecConstraintsTest extends JparsecTest {
 				getNumberConstraint("g", 18, EQUALS), 
 				OR);
 		runConstraintsTest("a=5 AND b='cdef' OR g=18", expected);
+	}
+
+	@Test
+	public final void test_constraints5a() {
+		QlBooleanConstraintNode temp = new QlConstraintPair(
+				getNumberConstraint("a", 5, EQUALS), 
+				getStringConstraint("b", "cdef", EQUALS),
+				AND);
+		QlBooleanConstraintNode expected = new QlConstraintPair(
+				temp, 
+				getNumberConstraint("g", 18, EQUALS), 
+				OR);
+		runConstraintsTest("(a=5 AND b='cdef') OR g=18", expected);
+	}
+
+	@Test
+	public final void test_constraints5b() {
+		QlBooleanConstraintNode temp = new QlConstraintPair( 
+				getStringConstraint("b", "cdef", EQUALS),
+				getNumberConstraint("g", 18, EQUALS),
+				OR);
+		QlBooleanConstraintNode expected = new QlConstraintPair(
+				getNumberConstraint("a", 5, EQUALS),
+				temp,
+				AND);
+		runConstraintsTest("a=5 AND (b='cdef' OR g=18)", expected);
 	}
 
 	@Test

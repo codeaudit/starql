@@ -341,8 +341,11 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 
 	protected <OperatorT extends QlConstraintOperator> Parser<QlBooleanConstraintNode> constraintsParser(
 			ConstraintOperatorSupport<OperatorT> opSupport) {
-		return padWithWhitespace(constraintParser(opSupport), false)
+		Parser.Reference<QlBooleanConstraintNode> fieldOrFuncParserRef = Parser.newReference();
+		Parser<QlBooleanConstraintNode> constraintsParser = padWithWhitespace(constraintGroupParser(opSupport, fieldOrFuncParserRef), false)
 				.infixl(constraintPairOperatorParser());
+		fieldOrFuncParserRef.lazySet(constraintsParser);
+		return constraintsParser;
 	}
 	
 	protected Parser<QlConstraintPairOperator> constraintPairOperatorParser() {
@@ -357,6 +360,12 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	protected Parser<QlBooleanConstraintNode> constraintParser() {
 		return constraintParser(DEFAULT_OP_SUPPORT);
+	}
+	
+	protected <OperatorT extends QlConstraintOperator> Parser<QlBooleanConstraintNode> constraintGroupParser(
+			ConstraintOperatorSupport<OperatorT> opSupport,
+			Parser.Reference<QlBooleanConstraintNode> constraintsParserRef) {
+		return constraintsParserRef.lazy().between(paddedRegex("\\(", false, false), paddedRegex("\\)", false, false)).or(constraintParser(opSupport));
 	}
 	
 	protected <OperatorT extends QlConstraintOperator> Parser<QlBooleanConstraintNode> constraintParser(
