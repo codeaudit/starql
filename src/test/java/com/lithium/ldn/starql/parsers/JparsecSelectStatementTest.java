@@ -541,7 +541,7 @@ public class JparsecSelectStatementTest extends JparsecTest {
 	}
 
 	@Test
-	public final void test_qlSelectStatement_fieldsThreeLimitOffset() {
+	public final void test_qlSelectStatement_fieldsThreeLimitOffset1() {
 		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND age<50 OR login!='davidE' LIMIT 30 OFFSET 10";
 		List<QlField> fields = getFields("uid", "login", "email", "firstName");
 		String table = "users";
@@ -552,6 +552,30 @@ public class JparsecSelectStatementTest extends JparsecTest {
 						AND), 
 				getStringConstraint("login", "davidE", NOT_EQUALS), 
 				OR);
+		List<QlSortClause> sortConstraint = Lists.newArrayList();
+		QlPageConstraints pageConstraints = new QlPageConstraints(30, 10);
+		QlSelectStatement expected = QlSelectStatement.builder()
+				.setFields(fields)
+				.setCollection(table)
+				.setConstraints(constraints)
+				.setSortConstraints(sortConstraint)
+				.setPageConstraints(pageConstraints)
+				.build();
+		verify(query, expected);
+	}
+
+	@Test
+	public final void test_qlSelectStatement_fieldsThreeLimitOffset2() {
+		String query = "SELECT uid,login, email,firstName FROM users WHERE name='david' AND (age<50 OR login!='davidE') LIMIT 30 OFFSET 10";
+		List<QlField> fields = getFields("uid", "login", "email", "firstName");
+		String table = "users";
+		QlBooleanConstraintNode constraints = new QlConstraintPair(
+				getStringConstraint("name", "david", EQUALS),
+				new QlConstraintPair(
+						getNumberConstraint("age", 50, LESS_THAN),
+						getStringConstraint("login", "davidE", NOT_EQUALS), 
+						OR), 
+				AND);
 		List<QlSortClause> sortConstraint = Lists.newArrayList();
 		QlPageConstraints pageConstraints = new QlPageConstraints(30, 10);
 		QlSelectStatement expected = QlSelectStatement.builder()
