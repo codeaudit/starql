@@ -29,6 +29,7 @@ import com.lithium.ldn.starql.models.QlConstraintOperator;
 import com.lithium.ldn.starql.models.QlConstraintOperatorType;
 import com.lithium.ldn.starql.models.QlConstraintPairOperator;
 import com.lithium.ldn.starql.models.QlConstraintValue;
+import com.lithium.ldn.starql.models.QlConstraintValueBoolean;
 import com.lithium.ldn.starql.models.QlConstraintValueCollection;
 import com.lithium.ldn.starql.models.QlConstraintValueDate;
 import com.lithium.ldn.starql.models.QlConstraintValueExecutable;
@@ -455,7 +456,8 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				dateValueParser(),
 				numericalValueParser(), 
 				collectionValueParser(),
-				stringValueParser()
+				stringValueParser(),
+				booleanValueParser()
 				);
 	}
 	
@@ -517,7 +519,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	protected Parser<QlConstraintValueCollection<? extends QlConstraintValue>> collectionValueParser() {
 		return padWithWhitespace(
 				Parsers.or(executableValueParser(), stringValueParser(),
-						numericalValueParser()), false)
+						numericalValueParser(), booleanValueParser()), false)
 				.sepBy(padWithWhitespace(regex(",", true), false))
 				.between(padWithWhitespace(regex("\\(", true), false),
 						padWithWhitespace(regex("\\)", true), false))
@@ -571,10 +573,20 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	protected Parser<QlConstraintValueDate> dateValueParser() {
 		return regex("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?(Z|(\\+|-)[0-9]{2}:[0-9]{2})?", true)
-				.map(new Map<String, QlConstraintValueDate>(){
+				.map(new Map<String, QlConstraintValueDate>() {
 					@Override
 					public QlConstraintValueDate map(String arg0) {
 						return new QlConstraintValueDate(ISODateTimeFormat.dateTimeParser().parseDateTime(arg0));
+					}
+				});
+	}
+	
+	protected Parser<QlConstraintValueBoolean> booleanValueParser() {
+		return regex("true|false", false)
+				.map(new Map<String, QlConstraintValueBoolean>() {
+					@Override
+					public QlConstraintValueBoolean map(String arg0) {
+						return new QlConstraintValueBoolean(Boolean.parseBoolean(arg0));
 					}
 				});
 	}

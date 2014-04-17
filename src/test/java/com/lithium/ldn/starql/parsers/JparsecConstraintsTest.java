@@ -136,9 +136,9 @@ public class JparsecConstraintsTest extends JparsecTest {
 				AND);
 		QlBooleanConstraintNode expected = new QlConstraintPair(
 				temp4, 
-				getNumberConstraint("z", 18, EQUALS), 
+				getBooleanConstraint("z", true, EQUALS), 
 				OR);
-		runConstraintsTest("a=5 AND b='c' OR d=18 AND w=5 AND x='y' OR z=18", expected);
+		runConstraintsTest("a=5 AND b='c' OR d=18 AND w=5 AND x='y' OR z=true", expected);
 	}
 	
 	private final void runConstraintsTest(String query, QlBooleanConstraintNode expected) {

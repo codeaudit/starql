@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.lithium.ldn.starql.models.QlConstraint;
 import com.lithium.ldn.starql.models.QlConstraintOperatorType;
 import com.lithium.ldn.starql.models.QlConstraintValue;
+import com.lithium.ldn.starql.models.QlConstraintValueBoolean;
 import com.lithium.ldn.starql.models.QlConstraintValueCollection;
 import com.lithium.ldn.starql.models.QlConstraintValueDate;
 import com.lithium.ldn.starql.models.QlConstraintValueNumber;
@@ -46,6 +47,14 @@ public abstract class JparsecTest {
 		return new QlConstraintValueCollection<QlConstraintValue>(vals);
 	}
 	
+	protected final QlConstraintValueCollection<QlConstraintValue> getConstraintValueCollectionBoolean(Boolean...values) {
+		List<QlConstraintValue> vals = Lists.newArrayList();
+		for (Boolean value : values) {
+			vals.add(new QlConstraintValueBoolean(value));
+		}
+		return new QlConstraintValueCollection<QlConstraintValue>(vals);
+	}
+	
 	//Use this one for recursive ql fields.
 	protected final QlConstraint getStringConstraint(QlField field, String value, QlConstraintOperatorType op) {
 		return new QlConstraint(field, new QlConstraintValueString(value), op);
@@ -66,6 +75,10 @@ public abstract class JparsecTest {
 	
 	protected final QlConstraint getDateConstraint(String key, DateTime value, QlConstraintOperatorType op) {
 		return new QlConstraint(QlField.create(key), new QlConstraintValueDate(value), op);
+	}
+	
+	protected final QlConstraint getBooleanConstraint(String key, Boolean value, QlConstraintOperatorType op) {
+		return new QlConstraint(QlField.create(key), new QlConstraintValueBoolean(value), op);
 	}
 	
 	protected final QlConstraint getCollectionConstraint(QlField field, QlConstraintOperatorType op) {

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.lithium.ldn.starql.models.QlConstraintValue;
+import com.lithium.ldn.starql.models.QlConstraintValueBoolean;
 import com.lithium.ldn.starql.models.QlConstraintValueCollection;
 import com.lithium.ldn.starql.models.QlConstraintValueDate;
 import com.lithium.ldn.starql.models.QlConstraintValueNumber;
@@ -189,5 +190,42 @@ public class JparsecConstraintVariableTest extends JparsecTest {
 	public final void test_variable25() {
 		String var = "0.0";
 		assertEquals(0D, inst.constraintValueParser().parse(var).asA(QlConstraintValueNumber.class).getValue());
+	}
+	
+	@Test
+	public final void test_variable26() {
+		String var = "true";
+		assertEquals(true, inst.constraintValueParser().parse(var).asA(QlConstraintValueBoolean.class).getValue());
+	}
+	
+	@Test
+	public final void test_variable27() {
+		String var = "'true'";
+		assertEquals("true", inst.constraintValueParser().parse(var).asA(QlConstraintValueString.class).getValue());
+	}
+	
+	@Test
+	public final void test_variable28() {
+		String var = "false";
+		assertEquals(false, inst.constraintValueParser().parse(var).asA(QlConstraintValueBoolean.class).getValue());
+	}
+	
+	@Test
+	public final void test_variable29() {
+		String var = "FAlse";
+		assertEquals(false, inst.constraintValueParser().parse(var).asA(QlConstraintValueBoolean.class).getValue());
+	}
+	
+	@Test
+	public final void test_variable30() {
+		String var = "TRUE";
+		assertEquals(true, inst.constraintValueParser().parse(var).asA(QlConstraintValueBoolean.class).getValue());
+	}
+	
+	@Test
+	public final void test_variable31() {
+		String var = "(true, false, tRUE)";
+		QlConstraintValueCollection<QlConstraintValue> varExpected = getConstraintValueCollectionBoolean(true, false, true);
+		assertEquals(varExpected, inst.constraintValueParser().parse(var).asA(QlConstraintValueCollection.class));
 	}
 }
