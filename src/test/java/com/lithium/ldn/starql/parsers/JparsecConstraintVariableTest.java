@@ -228,4 +228,16 @@ public class JparsecConstraintVariableTest extends JparsecTest {
 		QlConstraintValueCollection<QlConstraintValue> varExpected = getConstraintValueCollectionBoolean(true, false, true);
 		assertEquals(varExpected, inst.constraintValueParser().parse(var).asA(QlConstraintValueCollection.class));
 	}
+	
+	@Test
+	public final void test_variable32() {
+		String var = "-25";
+		assertEquals(-25, inst.constraintValueParser().parse(var).asA(QlConstraintValueNumber.class).getValue());
+	}
+	
+	@Test
+	public final void test_variable33() {
+		String var = "+25";
+		assertEquals(25, inst.constraintValueParser().parse(var).asA(QlConstraintValueNumber.class).getValue());
+	}
 }
