@@ -60,7 +60,7 @@ public final class QlConstraint implements QlBooleanConstraintNode {
 
 	@Override
 	public String getQueryString() {
-		return key + operation.getDisplayString() + value;
+		return key.getQualifiedName() + " " + operation.getDisplayString() + " " + value;
 	}
 
 	@Override
