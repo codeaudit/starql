@@ -58,8 +58,8 @@ public final class QlConstraintPair implements QlBooleanConstraintNode {
 
 	@Override
 	public String getQueryString() {
-		return "(" + leftHandSide.getQueryString() + " " + operation.getName() + " " 
-				+ rightHandSide.getQueryString() + ")"; 
+		return leftHandSide.getQueryString() + " " + operation.getName() + " " 
+				+ rightHandSide.getQueryString(); 
 	}
 
 	@Override
