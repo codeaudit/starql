@@ -3,6 +3,8 @@ package com.lithium.ldn.starql.models;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -30,7 +32,7 @@ public final class QlConstraintValueCollection<TypeT extends QlConstraintValue> 
 	
 	@Override
 	public String toString() {
-		return value.toString();
+		return "(" + StringUtils.join(value.toArray(), ", ") + ")";
 	}
 
 	@Override

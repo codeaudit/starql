@@ -175,7 +175,7 @@ public class QlSelectStatement implements QueryStatement{
 
 	private String initQueryString() {
 		return "SELECT " + fieldsString() + " FROM " + table
-				+ (hasConstraints() ? " where " + constraints.getQueryString() : "")
+				+ (hasConstraints() ? " WHERE " + constraints.getQueryString() : "")
 				+ (hasSortConstraint() ? " " + getSortString() : "")
 				+ (hasLimitConstraint() ? " LIMIT " + getLimitConstraint() : "")
 				+ (hasOffsetConstraint() ? " OFFSET " + getOffsetConstraint() : "");
