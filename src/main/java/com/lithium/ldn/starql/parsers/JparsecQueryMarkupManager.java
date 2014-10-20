@@ -15,7 +15,6 @@ import org.codehaus.jparsec.functors.Pair;
 import org.codehaus.jparsec.functors.Tuple3;
 import org.codehaus.jparsec.functors.Tuple5;
 import org.codehaus.jparsec.pattern.Patterns;
-import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.common.collect.Lists;
@@ -203,6 +202,24 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 		return fieldOrFuncParser;
 	}
 	
+	protected Parser<Pair<QlField, QlSortOrderType>> fieldOrFunctionParserOB() {
+		Parser.Reference<Pair<QlField, QlSortOrderType>> fieldOrFuncParserRef = Parser.newReference();
+		Parser<Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean>> simpleParser = simpleFieldParserOB();
+		Parser<Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean>> fieldParser = fieldParserOB(fieldOrFuncParserRef);
+		Parser<Pair<QlField, QlSortOrderType>> fieldOrFuncParser = 
+				Parsers.or(functionParserOB(fieldOrFuncParserRef), fieldParser, 
+						simpleParser).map(
+				new Map<Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean>, Pair<QlField, QlSortOrderType>>() {
+					@Override
+					public Pair<QlField, QlSortOrderType> map(Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean> fieldInfo) {
+						return new Pair(QlField.create(null, fieldInfo.a, fieldInfo.b.a,
+								fieldInfo.c), QlSortOrderType.DEFAULT);
+					}
+				});
+		fieldOrFuncParserRef.lazySet(fieldOrFuncParser);
+		return fieldOrFuncParser;
+	}
+	
 	protected Parser<QlField> qualifiedFieldOrFunctionParser() {
 		Parser.Reference<QlField> fieldOrFuncParserRef = Parser.newReference();
 		Parser<Tuple3<String, QlField, Boolean>> simpleParser = simpleFieldParser();
@@ -231,13 +248,33 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 							Parsers.constant(true));
 	}
 	
+	protected Parser<Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean>> functionParserOB(Parser.Reference<Pair<QlField, QlSortOrderType>> fieldOrFuncParserRef) {
+		return Parsers.tuple(alphaNumeric().followedBy(padWithWhitespace(regex("\\(", true), false)),
+							insideFunctionParserOB(fieldOrFuncParserRef),
+							Parsers.constant(true));
+	}
+	
 	protected Parser<QlField> insideFunctionParser(Parser.Reference<QlField> fieldOrFuncParserRef) {
 		return Parsers.or(fieldSingleStarParser(), fieldOrFuncParserRef.lazy()).followedBy(
 				padWithWhitespace(regex("\\)", true), true));
 	}
 	
+	protected Parser<Pair<QlField, QlSortOrderType>> insideFunctionParserOB(Parser.Reference<Pair<QlField, QlSortOrderType>> fieldOrFuncParserRef) {
+		return Parsers.or(fieldSingleStarParserOB(), fieldOrFuncParserRef.lazy()).followedBy(
+				padWithWhitespace(regex("\\)", true), true));
+	}
+	
 	protected Parser<Tuple3<String, QlField, Boolean>> fieldParser(
 			Parser.Reference<QlField> fieldOrFuncParserRef) {
+		return Parsers.tuple(
+				alphaNumeric().followedBy(padWithWhitespace(regex("\\.", true), false)), 
+				fieldOrFuncParserRef.lazy(), 
+				Parsers.constant(false));
+
+	}
+	
+	protected Parser<Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean>> fieldParserOB(
+			Parser.Reference<Pair<QlField, QlSortOrderType>> fieldOrFuncParserRef) {
 		return Parsers.tuple(
 				alphaNumeric().followedBy(padWithWhitespace(regex("\\.", true), false)), 
 				fieldOrFuncParserRef.lazy(), 
@@ -251,12 +288,28 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				Parsers.constant(false));
 	}
 	
+	protected Parser<Tuple3<String,Pair<QlField,QlSortOrderType>,Boolean>> simpleFieldParserOB() {
+		return Parsers.tuple(alphaNumeric(),
+				Parsers.constant(new Pair<QlField,QlSortOrderType>((QlField)null,QlSortOrderType.DEFAULT)),
+				Parsers.constant(false));
+	}
+	
 	protected Parser<QlField> fieldSingleStarParser() {
 		return paddedRegex("\\*", true, true)
 				.map(new Map<String, QlField>() {
 					@Override
 					public QlField map(String arg0) {
 						return QlField.create(arg0);
+					}
+				});
+	}
+	
+	protected Parser<Pair<QlField, QlSortOrderType>> fieldSingleStarParserOB() {
+		return paddedRegex("\\*", true, true)
+				.map(new Map<String, Pair<QlField, QlSortOrderType>>() {
+					@Override
+					public Pair<QlField, QlSortOrderType> map(String arg0) {
+						return new Pair(QlField.create(arg0), QlSortOrderType.DEFAULT);
 					}
 				});
 	}
@@ -278,7 +331,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	 */
 	protected Parser<List<QlSortClause>> orderByParser() {
 		return paddedRegex("ORDER BY", false, false)
-				.next(Parsers.tuple(fieldOrFunctionParser(), sortOrderTypeParser())
+				.next(Parsers.tuple(fieldOrFunctionParser(), sortOrderTypeParser()).or(fieldOrFunctionParserOB())
 				.sepBy1(paddedRegex(",", false, false)))
 				.map(new Map<List<Pair<QlField, QlSortOrderType>>, List<QlSortClause>>() {
 						@Override
@@ -293,7 +346,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	}
 	
 	protected Parser<QlSortOrderType> sortOrderTypeParser() {
-		return paddedRegex("[a-z]+", true, false)
+		return paddedRegex("(ASC)|(ASCENDING)|(DESC)|(DESCENDING)|(DEF)|(DEFAULT)", true, false)
 				.map(new Map<String, QlSortOrderType>() {
 					@Override
 					public QlSortOrderType map(String arg0) {
@@ -613,9 +666,8 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 	
 	public static void main(String[] args) throws InvalidQueryException, QueryValidationException {
 		JparsecQueryMarkupManager man = new JparsecQueryMarkupManager();
-		DateTime date = new DateTime();
-		String dateString = date.toString(ISODateTimeFormat.dateTime());
-		System.out.println(dateString);
-		System.out.println(man.dateValueParser().parse(dateString));
+		String query = "SELECT * FROM messages ORDER BY asdf LIMIT 1 OFFSET 1";
+		QlSelectStatement q = man.parseQlSelect(query);
+		System.out.println(q);
 	}
 }

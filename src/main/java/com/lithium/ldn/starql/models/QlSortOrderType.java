@@ -12,7 +12,7 @@ public enum QlSortOrderType {
 
 	ASC,
 	DESC,
-	UNKNOWN;
+	DEFAULT;
 	
 	@SuppressWarnings("serial")
 	public static final Map<String, QlSortOrderType> map = new HashMap<String, QlSortOrderType>() {
@@ -23,11 +23,14 @@ public enum QlSortOrderType {
 			put("DESC",DESC);
 			put("desc",DESC);
 			put("DESCENDING",DESC);
+			put("DEF", DEFAULT);
+			put("def", DEFAULT);
+			put("DEFAULT", DEFAULT);
 		}
 	};
 	
 	public static QlSortOrderType get(String lookupName) {
 		QlSortOrderType sortOrderType = map.get(lookupName);
-		return sortOrderType == null ? UNKNOWN : sortOrderType;
+		return sortOrderType == null ? DEFAULT : sortOrderType;
 	}
 }
