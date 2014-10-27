@@ -212,7 +212,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				new Map<Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean>, Pair<QlField, QlSortOrderType>>() {
 					@Override
 					public Pair<QlField, QlSortOrderType> map(Tuple3<String, Pair<QlField, QlSortOrderType>, Boolean> fieldInfo) {
-						return new Pair(QlField.create(null, fieldInfo.a, fieldInfo.b.a,
+						return new Pair<QlField, QlSortOrderType>(QlField.create(null, fieldInfo.a, fieldInfo.b.a,
 								fieldInfo.c), QlSortOrderType.DEFAULT);
 					}
 				});
@@ -309,7 +309,7 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 				.map(new Map<String, Pair<QlField, QlSortOrderType>>() {
 					@Override
 					public Pair<QlField, QlSortOrderType> map(String arg0) {
-						return new Pair(QlField.create(arg0), QlSortOrderType.DEFAULT);
+						return new Pair<QlField, QlSortOrderType>(QlField.create(arg0), QlSortOrderType.DEFAULT);
 					}
 				});
 	}
@@ -662,12 +662,5 @@ public class JparsecQueryMarkupManager implements QueryMarkupManager {
 								1, arg0.length() - 1).trim());
 					}
 				});
-	}
-	
-	public static void main(String[] args) throws InvalidQueryException, QueryValidationException {
-		JparsecQueryMarkupManager man = new JparsecQueryMarkupManager();
-		String query = "SELECT * FROM messages ORDER BY asdf LIMIT 1 OFFSET 1";
-		QlSelectStatement q = man.parseQlSelect(query);
-		System.out.println(q);
 	}
 }
