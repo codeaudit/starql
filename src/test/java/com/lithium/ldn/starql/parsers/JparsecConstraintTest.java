@@ -2,6 +2,7 @@ package com.lithium.ldn.starql.parsers;
 
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.EQUALS;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.GREATER_THAN;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.HAS_ALL;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.IN;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LESS_THAN_EQUAL;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LIKE;
@@ -84,6 +85,16 @@ public class JparsecConstraintTest extends JparsecTest {
 	@Test
 	public final void test_constraint11() {
 		runConstraintTest("body LIKE ('asdf', 'fdsa')", getStringCollectionConstraint(QlField.create("body"), LIKE, "asdf", "fdsa"));
+	}
+
+	@Test
+	public final void test_constraint12() {
+		runConstraintTest("body has_all ('asdf')", getStringCollectionConstraint(QlField.create("body"), HAS_ALL, "asdf"));
+	}
+
+	@Test
+	public final void test_constraint13() {
+		runConstraintTest("body HAS_ALL ('asdf', 'fdsa')", getStringCollectionConstraint(QlField.create("body"), HAS_ALL, "asdf", "fdsa"));
 	}
 	
 	private final void runConstraintTest(String query, QlConstraint expected) {

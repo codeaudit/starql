@@ -3,6 +3,7 @@ package com.lithium.ldn.starql.parsers;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.EQUALS;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.GREATER_THAN;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.GREATER_THAN_EQUAL;
+import static com.lithium.ldn.starql.models.QlConstraintOperatorType.HAS_ALL;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.IN;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LESS_THAN;
 import static com.lithium.ldn.starql.models.QlConstraintOperatorType.LESS_THAN_EQUAL;
@@ -88,6 +89,16 @@ public class JparsecConstraintOperatorTest extends JparsecTest {
 	@Test
 	public final void test_constraintOperator12() {
 		assertEquals(LIKE, inst.constraintOperatorParser().parse("like"));
+	}
+
+	@Test
+	public final void test_constraintOperator13() {
+		assertEquals(HAS_ALL, inst.constraintOperatorParser().parse("HAS_ALL"));
+	}
+
+	@Test
+	public final void test_constraintOperator14() {
+		assertEquals(HAS_ALL, inst.constraintOperatorParser().parse("has_all"));
 	}
 	
 	/*
