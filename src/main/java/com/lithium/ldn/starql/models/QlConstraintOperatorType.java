@@ -61,6 +61,18 @@ public enum QlConstraintOperatorType implements QlConstraintOperator {
 	 */
 	@SuppressWarnings("unchecked")
 	IN("IN", getSet(QlConstraintValueCollection.class)),
+
+	/**
+	 * Checks equality of collection to all values in a given collection. e.g.
+	 *
+	 *   collection has_all (1,2,3)
+	 *
+	 *   which is equivalient to
+	 *
+	 *   collection contains 1 AND collection contains 3 AND collection contains 3
+	 */
+	@SuppressWarnings("unchecked")
+	HAS_ALL("HAS_ALL", getSet(QlConstraintValueCollection.class)),
 	
 	
 	@SuppressWarnings("unchecked")
@@ -91,6 +103,7 @@ public enum QlConstraintOperatorType implements QlConstraintOperator {
 		temp.put(GREATER_THAN_EQUAL.getName(), GREATER_THAN_EQUAL);
 		temp.put(LESS_THAN_EQUAL.getName(), LESS_THAN_EQUAL);
 		temp.put(IN.getName(), IN);
+		temp.put(HAS_ALL.getName(), HAS_ALL);
 		temp.put(MATCHES.getName(), MATCHES);
 		temp.put(LIKE.getName(), LIKE);
 		map = Collections.unmodifiableMap(temp);
